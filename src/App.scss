@@ -12,13 +12,17 @@
   --home-grad: linear-gradient(to bottom, #2E4E7E, #16283F);
   --hinge-grad: linear-gradient(to bottom, #F0D092, #8A6435 55%, #5C3E1C);
   --highlight-color: #FFDF8F;
+  --move-color: #33E86F;
+  --move-color-rgb: 51, 232, 111;
   --vignette-alpha: 0.24;
   --app-bg: linear-gradient(to bottom, #262D4D, #10121F);
   --circle-color: #83919e24;
   --checker-a: url("assets/checker-light.svg");
   --checker-a-sel: url("assets/checker-light-selected.svg");
+  --checker-a-move: var(--checker-a);
   --checker-b: url("assets/checker-dark.svg");
   --checker-b-sel: url("assets/checker-dark-selected.svg");
+  --checker-b-move: var(--checker-b);
   --checker-home-a: url("assets/checker-home-light.svg");
   --checker-home-b: url("assets/checker-home-dark.svg");
   --card-grad: linear-gradient(160deg, #3A2C18, #201408);
@@ -155,6 +159,22 @@
 .Begin-game-button:hover, .Settings-menu-button:hover, .Roll-button:hover, .Offer-double-button:hover, .Forfeit-game-button:hover, .Accept-double-button:hover {
   box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.35), 0 calc(0.5vh * var(--shadow-scale)) calc(1.1vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha)), 0 0 1.2vh rgba(255, 223, 143, 0.35);
   transform: scale(var(--hover-scale, 110%));
+}
+
+// Soft pulsing halo on the roll button so the player immediately notices
+// it is their turn to roll. Runs on the wrapper so button hover styles stay
+// intact. Disabled entirely when animation intensity is 0%.
+.Roll-button-wrapper {
+  animation: roll-button-halo 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes roll-button-halo {
+  from {
+    filter: drop-shadow(0 0 0 rgba(var(--move-color-rgb), 0));
+  }
+  to {
+    filter: drop-shadow(0 0 1vh rgba(var(--move-color-rgb), calc(0.75 * var(--anim-scale))));
+  }
 }
 
 .Game-board-wrapper {
@@ -787,27 +807,28 @@
 }
 
 .Point-wrapper-highlight.from {
-  background: var(--highlight-color);
+  background: var(--move-color);
   opacity: calc(0.16 + 0.16 * var(--anim-scale));
 }
 
 .Point-wrapper-highlight.to {
   animation: point-glow 1.15s ease-in-out infinite alternate;
-  opacity: calc(0.55 + 0.45 * var(--anim-scale));
+  opacity: calc(0.72 + 0.28 * var(--anim-scale));
 }
 
 .Point-wrapper-highlight.to.bottom {
-  background: linear-gradient(to top, var(--highlight-color) 24%, rgba(255, 223, 143, 0.35) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(var(--move-color-rgb), 0.92) 24%, rgba(var(--move-color-rgb), 0.38) 60%, transparent 100%);
 }
 
 .Point-wrapper-highlight.to.top {
-  background: linear-gradient(to bottom, var(--highlight-color) 24%, rgba(255, 223, 143, 0.35) 60%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(var(--move-color-rgb), 0.92) 24%, rgba(var(--move-color-rgb), 0.38) 60%, transparent 100%);
 }
 
 // Pulsing landing marker at the base edge of destination points.
 .Point-wrapper-highlight.to::after {
-  background: radial-gradient(circle, #FFFFFF 0%, var(--highlight-color) 42%, transparent 72%);
+  background: radial-gradient(circle, #FFFFFF 0%, var(--move-color) 42%, rgba(var(--move-color-rgb), 0) 72%);
   border-radius: 50%;
+  box-shadow: 0 0 1.4vh rgba(var(--move-color-rgb), calc(0.5 + 0.4 * var(--anim-scale)));
   content: "";
   height: 30%;
   left: 50%;
@@ -827,7 +848,7 @@
 
 @keyframes point-glow {
   from {
-    opacity: calc(0.4 + 0.3 * var(--anim-scale));
+    opacity: calc(0.5 + 0.22 * var(--anim-scale));
   }
   to {
     opacity: 1;
@@ -940,7 +961,7 @@
 
 .Checker {
   filter: drop-shadow(0 calc(0.18vh * var(--shadow-scale)) calc(0.22vh * var(--shadow-scale)) rgba(0, 0, 0, var(--checker-shadow-alpha)));
-  transition: transform 0.3s ease-out, filter 0.35s ease-in-out;
+  transition: transform 0.3s ease-out, filter 0.35s ease-in-out, translate 0.25s ease-out;
   will-change: transform, filter;
   height: 15%;
   width: 45%;
@@ -953,35 +974,53 @@
   background-size: contain;
 }
 
-// Movable checkers glow clearly so the player can spot them instantly.
+// Movable checkers: green ring baked into the image + green glow + a slight
+// lift so the player instantly spots which checkers can move.
 .Checker.highlighted {
   filter:
-    drop-shadow(0 0 0.3vh var(--highlight-color))
-    drop-shadow(0 0 0.75vh var(--highlight-color))
-    brightness(1.14);
+    drop-shadow(0 0 0.32vh var(--move-color))
+    drop-shadow(0 0 0.85vh rgba(var(--move-color-rgb), 0.85))
+    brightness(1.16);
+  translate: 0 -2.5%;
 }
 
 .Checker.highlighted-pulse {
   animation: checker-glow-pulse 0.7s ease-in-out infinite alternate;
   filter:
-    drop-shadow(0 0 0.4vh var(--highlight-color))
-    drop-shadow(0 0 0.95vh var(--highlight-color))
+    drop-shadow(0 0 0.4vh var(--move-color))
+    drop-shadow(0 0 1vh rgba(var(--move-color-rgb), 0.9))
     brightness(1.2);
+  translate: 0 -2.5%;
 }
 
 @keyframes checker-glow-pulse {
   from {
     filter:
-      drop-shadow(0 0 0.22vh var(--highlight-color))
-      drop-shadow(0 0 0.55vh var(--highlight-color))
+      drop-shadow(0 0 0.24vh var(--move-color))
+      drop-shadow(0 0 0.6vh rgba(var(--move-color-rgb), 0.7))
       brightness(1.1);
   }
   to {
     filter:
-      drop-shadow(0 0 0.5vh var(--highlight-color))
-      drop-shadow(0 0 1.15vh var(--highlight-color))
-      brightness(1.28);
+      drop-shadow(0 0 0.55vh var(--move-color))
+      drop-shadow(0 0 1.25vh rgba(var(--move-color-rgb), 0.95))
+      brightness(1.3);
   }
+}
+
+// Movable checkers switch to the green-ringed variant of their own checker set.
+.Checker.white.highlighted,
+.Checker.white.highlighted-pulse {
+  background-image: var(--checker-a-move);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.Checker.black.highlighted,
+.Checker.black.highlighted-pulse {
+  background-image: var(--checker-b-move);
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 // The selected checker gets a golden ring baked into its image plus a
@@ -1042,17 +1081,17 @@
 }
 
 .Player-one-bar-checkers.highlight {
-  background: linear-gradient(to top, transparent, var(--highlight-color));
+  background: linear-gradient(to top, rgba(var(--move-color-rgb), 0.55), rgba(var(--move-color-rgb), 0));
   border-bottom-left-radius: 5vh;
   border-bottom-right-radius: 5vh;
-  opacity: calc(0.35 + 0.3 * var(--anim-scale));
+  opacity: calc(0.5 + 0.35 * var(--anim-scale));
 }
 
 .Player-two-bar-checkers.highlight {
-  background: linear-gradient(to bottom, transparent, var(--highlight-color));
+  background: linear-gradient(to bottom, rgba(var(--move-color-rgb), 0.55), rgba(var(--move-color-rgb), 0));
   border-top-left-radius: 5vh;
   border-top-right-radius: 5vh;
-  opacity: calc(0.35 + 0.3 * var(--anim-scale));
+  opacity: calc(0.5 + 0.35 * var(--anim-scale));
 }
 
 .Game-board-bar-spacer {
@@ -1096,19 +1135,19 @@
 }
 
 .Player-one-home-checkers.highlighted {
-  background: linear-gradient(to bottom, var(--highlight-color), transparent);
+  background: linear-gradient(to bottom, rgba(var(--move-color-rgb), 0.55), rgba(var(--move-color-rgb), 0));
   background-size: cover;
   border-top-left-radius: 1vh;
   border-top-right-radius: 1vh;
-  opacity: calc(0.4 + 0.3 * var(--anim-scale));
+  opacity: calc(0.55 + 0.35 * var(--anim-scale));
 }
 
 .Player-two-home-checkers.highlighted {
-  background: linear-gradient(to top, var(--highlight-color), transparent);
+  background: linear-gradient(to top, rgba(var(--move-color-rgb), 0.55), rgba(var(--move-color-rgb), 0));
   background-size: cover;
   border-bottom-left-radius: 1vh;
   border-bottom-right-radius: 1vh;
-  opacity: calc(0.4 + 0.3 * var(--anim-scale));
+  opacity: calc(0.55 + 0.35 * var(--anim-scale));
 }
 
 .Game-board-home-spacer {
@@ -2084,6 +2123,10 @@ $floating-circle-count: 50;
 
 .fx-off .Checker.highlighted-pulse,
 .fx-off .Checker.selected-pulse {
+  animation: none;
+}
+
+.fx-off .Roll-button-wrapper {
   animation: none;
 }
 

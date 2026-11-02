@@ -87,7 +87,11 @@ function svgUri(svg: string): string {
  * Renders a realistic backgammon checker: beveled rim, concentric groove
  * rings, dome lighting and a soft top-left gloss.
  */
-function checkerSVG(c: CheckerStyleDef, selected: boolean): string {
+function checkerSVG(
+  c: CheckerStyleDef,
+  selected: boolean,
+  movable = false
+): string {
   const ring = (r: number, w: number, o: number) =>
     `<circle cx="64" cy="64" r="${r}" fill="none" stroke="${c.ring}" stroke-opacity="${o}" stroke-width="${w}"/>`;
   const rings = [
@@ -101,6 +105,13 @@ function checkerSVG(c: CheckerStyleDef, selected: boolean): string {
   const selRing = selected
     ? `<circle cx="64" cy="64" r="55" fill="none" stroke="#FFDF8F" stroke-opacity="0.95" stroke-width="5.5"/>
        <circle cx="64" cy="64" r="49.5" fill="none" stroke="#FFF3C4" stroke-opacity="0.5" stroke-width="2"/>`
+    : "";
+  // Green "you can move this" ring so movable checkers are unmistakable even
+  // where glow filters render weakly (cheap mobile GPUs, bright boards).
+  const moveRing = movable
+    ? `<circle cx="64" cy="64" r="60" fill="none" stroke="#0E7A38" stroke-opacity="0.85" stroke-width="3.5"/>
+       <circle cx="64" cy="64" r="55.5" fill="none" stroke="#33E86F" stroke-opacity="1" stroke-width="5.5"/>
+       <circle cx="64" cy="64" r="49.5" fill="none" stroke="#E9FFF1" stroke-opacity="0.6" stroke-width="2"/>`
     : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
 <defs>
@@ -129,6 +140,7 @@ ${rings}
 <circle cx="64" cy="64" r="56" fill="url(#shade)"/>
 <circle cx="64" cy="64" r="56" fill="url(#gloss)"/>
 ${selRing}
+${moveRing}
 </svg>`;
 }
 
@@ -356,6 +368,16 @@ export const BACKGROUND_THEMES: BackgroundThemeDef[] = [
   },
 ];
 
+/**
+ * Move-affordance green. Deliberately independent of the board theme so
+ * players learn one consistent rule: green ring = movable checker,
+ * green triangle = place you can move to.
+ */
+export const MOVE_HIGHLIGHT = {
+  color: "#33E86F",
+  rgb: "51, 232, 111",
+};
+
 export const DEFAULT_BOARD_THEME = "walnut";
 export const DEFAULT_CHECKER_THEME = "ivory-ebony";
 export const DEFAULT_BACKGROUND_THEME = "velvet-night";
@@ -417,6 +439,11 @@ export function applyVisualSettings(s: VisualSettings): void {
   set("--highlight-color", b.highlight);
   set("--vignette-alpha", String(b.vignette));
 
+  // Green used for move affordances: movable checkers + legal destinations.
+  // Kept theme-independent so the affordance always reads as "green = can go".
+  set("--move-color", MOVE_HIGHLIGHT.color);
+  set("--move-color-rgb", MOVE_HIGHLIGHT.rgb);
+
   // Player cards tinted from the frame wood so the room feels cohesive.
   set("--card-grad", `linear-gradient(160deg, ${b.frameLight}, ${b.frameDark})`);
   set(
@@ -430,8 +457,10 @@ export function applyVisualSettings(s: VisualSettings): void {
   const c = getCheckerTheme(s.checkerTheme);
   set("--checker-a", svgUri(checkerSVG(c.a, false)));
   set("--checker-a-sel", svgUri(checkerSVG(c.a, true)));
+  set("--checker-a-move", svgUri(checkerSVG(c.a, false, true)));
   set("--checker-b", svgUri(checkerSVG(c.b, false)));
   set("--checker-b-sel", svgUri(checkerSVG(c.b, true)));
+  set("--checker-b-move", svgUri(checkerSVG(c.b, false, true)));
   set("--checker-home-a", svgUri(checkerHomeSVG(c.a)));
   set("--checker-home-b", svgUri(checkerHomeSVG(c.b)));
 
