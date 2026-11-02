@@ -1,5 +1,5 @@
 import cx from "classnames";
-import { FunctionComponent, useContext } from "react";
+import { FunctionComponent, useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
@@ -7,15 +7,33 @@ import Checker, { CheckerStatus } from "./Checker";
 import { Color, MovementDirection, Player } from "./Types";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
+  setAnimationIntensity,
+  setBackgroundTheme,
+  setBoardTheme,
+  setCheckerTheme,
   setMovementDirection,
   setPlayerOneColor,
+  setShadowIntensity,
   setShowSettingsMenu,
 } from "./store/settingsSlice";
 import { ActionsContext, LocalGameActions } from "./ActionsContext";
+import {
+  BACKGROUND_THEMES,
+  BOARD_THEMES,
+  CHECKER_THEMES,
+  getCheckerTheme,
+} from "./themes";
 
 type SettingsMenuProps = {
   playerPerspective: Player;
 };
+
+enum SettingsTab {
+  Checkers = "CHECKERS",
+  Board = "BOARD",
+  Background = "BACKGROUND",
+  Effects = "EFFECTS",
+}
 
 const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
   playerPerspective,
@@ -23,6 +41,7 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
   const settings = useAppSelector((state) => state.settings);
   let actions = useContext(ActionsContext);
   const dispatch = useAppDispatch();
+  const [activeTab, setActiveTab] = useState<SettingsTab>(SettingsTab.Checkers);
 
   let playerOneColor = settings.playerOneColor;
   let playerTwoColor =
@@ -58,6 +77,255 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
     secondPlayerLabel = "Opponent";
   }
 
+  const checkerPair = (themeId: string) => {
+    const t = getCheckerTheme(themeId);
+    const gradA = `radial-gradient(circle at 36% 30%, ${t.a.light}, ${t.a.mid} 58%, ${t.a.dark})`;
+    const gradB = `radial-gradient(circle at 36% 30%, ${t.b.light}, ${t.b.mid} 58%, ${t.b.dark})`;
+    return (
+      <div className={"Settings-checker-pair"}>
+        <div
+          className={"pair-checker first"}
+          style={{
+            background: gradA,
+            boxShadow: `inset 0 0 0 1px ${t.a.edge}, 0 1px 2px rgba(0,0,0,0.5)`,
+          }}
+        />
+        <div
+          className={"pair-checker second"}
+          style={{
+            background: gradB,
+            boxShadow: `inset 0 0 0 1px ${t.b.edge}, 0 1px 2px rgba(0,0,0,0.5)`,
+          }}
+        />
+      </div>
+    );
+  };
+
+  const boardPreview = (themeId: string) => {
+    const t = BOARD_THEMES.find((b) => b.id === themeId)!;
+    return (
+      <div
+        className={"Settings-board-preview"}
+        style={{
+          background: `linear-gradient(to bottom, ${t.frameLight}, ${t.frameDark})`,
+        }}
+      >
+        <div
+          className={"mini-field"}
+          style={{
+            background: `linear-gradient(to bottom, ${t.fieldLight}, ${t.fieldDark})`,
+          }}
+        >
+          <div
+            className={"mini-triangle a"}
+            style={{ background: t.pointA }}
+          />
+          <div
+            className={"mini-triangle b"}
+            style={{ background: t.pointB }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const bgPreview = (themeId: string) => {
+    const t = BACKGROUND_THEMES.find((b) => b.id === themeId)!;
+    return (
+      <div
+        className={"Settings-board-preview"}
+        style={{ background: t.bg }}
+      >
+        <div
+          style={{
+            background: `radial-gradient(circle at 70% 30%, ${t.circle}55, transparent 60%)`,
+            height: "100%",
+            width: "100%",
+          }}
+        />
+      </div>
+    );
+  };
+
+  const checkerTab = (
+    <>
+      <div className={"Settings-section-title"}>Checker set</div>
+      <div className={"Settings-theme-grid"}>
+        {CHECKER_THEMES.map((t) => (
+          <div
+            key={t.id}
+            className={cx("Settings-theme-chip", {
+              selected: settings.checkerTheme === t.id,
+            })}
+            onClick={() => dispatch(setCheckerTheme(t.id))}
+          >
+            <div className={"Settings-chip-preview"}>{checkerPair(t.id)}</div>
+            <div className={"Settings-chip-name"}>{t.name}</div>
+          </div>
+        ))}
+      </div>
+      <div className={"Settings-option-row"}>
+        <div className={"Settings-checker-color-label"}>Your checkers</div>
+        <div
+          className={"Settings-menu-player-names-and-checkers"}
+          onClick={togglePlayerColor}
+        >
+          <div className={"Settings-menu-player-name-and-checker"}>
+            <div className={"Settings-menu-player-name"}>
+              {firstPlayerLabel}
+            </div>
+            <div className={"Settings-menu-checker-wrapper"}>
+              <Checker
+                color={firstPlayerColor}
+                checkerPulse={false}
+                status={CheckerStatus.None}
+                onAnimationComplete={() => {}}
+                animation={null}
+              />
+            </div>
+          </div>
+          <div className={"Settings-menu-color-swap-arrow-wrapper"}>
+            <div className={"Settings-menu-color-swap"}>SWAP</div>
+            <div className={"Settings-menu-color-swap-arrow"} />
+          </div>
+          <div className={"Settings-menu-player-name-and-checker"}>
+            <div className={"Settings-menu-player-name"}>
+              {secondPlayerLabel}
+            </div>
+            <div className={"Settings-menu-checker-wrapper"}>
+              <Checker
+                color={secondPlayerColor}
+                checkerPulse={false}
+                status={CheckerStatus.None}
+                onAnimationComplete={() => {}}
+                animation={null}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className={"Settings-option-row bottom"}>
+        <div className={"Settings-checker-direction-label"}>
+          Movement direction
+        </div>
+        <div
+          className={"Settings-option-movement-diagram-wrapper"}
+          onClick={toggleMovementDirection}
+        >
+          <div
+            className={cx("Settings-option-movement-diagram", {
+              light: firstPlayerColor === Color.White,
+              dark: firstPlayerColor === Color.Black,
+              cw:
+                (playerPerspective === Player.One &&
+                  settings.movementDirection ===
+                    MovementDirection.Clockwise) ||
+                (playerPerspective === Player.Two &&
+                  settings.movementDirection ===
+                    MovementDirection.CounterClockwise),
+            })}
+          />
+        </div>
+      </div>
+    </>
+  );
+
+  const boardTab = (
+    <>
+      <div className={"Settings-section-title"}>Board theme</div>
+      <div className={"Settings-theme-grid"}>
+        {BOARD_THEMES.map((t) => (
+          <div
+            key={t.id}
+            className={cx("Settings-theme-chip", {
+              selected: settings.boardTheme === t.id,
+            })}
+            onClick={() => dispatch(setBoardTheme(t.id))}
+          >
+            <div className={"Settings-chip-preview"}>{boardPreview(t.id)}</div>
+            <div className={"Settings-chip-name"}>{t.name}</div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
+  const backgroundTab = (
+    <>
+      <div className={"Settings-section-title"}>Background</div>
+      <div className={"Settings-theme-grid"}>
+        {BACKGROUND_THEMES.map((t) => (
+          <div
+            key={t.id}
+            className={cx("Settings-theme-chip", {
+              selected: settings.backgroundTheme === t.id,
+            })}
+            onClick={() => dispatch(setBackgroundTheme(t.id))}
+          >
+            <div className={"Settings-chip-preview"}>{bgPreview(t.id)}</div>
+            <div className={"Settings-chip-name"}>{t.name}</div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
+  const effectsTab = (
+    <>
+      <div className={"Settings-section-title"}>Visual effects</div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Shadow depth</div>
+        <input
+          className={"Settings-slider"}
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={settings.shadowIntensity}
+          style={{ "--fill": `${settings.shadowIntensity}%` } as any}
+          onChange={(e) =>
+            dispatch(setShadowIntensity(Number(e.target.value)))
+          }
+        />
+        <div className={"Settings-slider-value"}>
+          {settings.shadowIntensity}%
+        </div>
+      </div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Animation intensity</div>
+        <input
+          className={"Settings-slider"}
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={settings.animationIntensity}
+          style={{ "--fill": `${settings.animationIntensity}%` } as any}
+          onChange={(e) =>
+            dispatch(setAnimationIntensity(Number(e.target.value)))
+          }
+        />
+        <div className={"Settings-slider-value"}>
+          {settings.animationIntensity}%
+        </div>
+      </div>
+      <div className={"Settings-hint"}>
+        Changes apply instantly and are saved on this device. At 0% animations
+        and ambient effects are turned off.
+      </div>
+    </>
+  );
+
+  const tabButton = (tab: SettingsTab, label: string) => (
+    <div
+      key={tab}
+      className={cx("Settings-tab", { active: activeTab === tab })}
+      onClick={() => setActiveTab(tab)}
+    >
+      {label}
+    </div>
+  );
+
   return (
     <Modal
       show={settings.showSettingsMenu}
@@ -70,69 +338,16 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
         <Modal.Title>Settings</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className={"Settings-option-row"}>
-          <div className={"Settings-checker-color-label"}>Checker color</div>
-          <div
-            className={"Settings-menu-player-names-and-checkers"}
-            onClick={togglePlayerColor}
-          >
-            <div className={"Settings-menu-player-name-and-checker"}>
-              <div className={"Settings-menu-player-name"}>
-                {firstPlayerLabel}
-              </div>
-              <div className={"Settings-menu-checker-wrapper"}>
-                <Checker
-                  color={firstPlayerColor}
-                  checkerPulse={false}
-                  status={CheckerStatus.None}
-                  onAnimationComplete={() => {}}
-                  animation={null}
-                />
-              </div>
-            </div>
-            <div className={"Settings-menu-color-swap-arrow-wrapper"}>
-              <div className={"Settings-menu-color-swap"}>SWAP</div>
-              <div className={"Settings-menu-color-swap-arrow"} />
-            </div>
-            <div className={"Settings-menu-player-name-and-checker"}>
-              <div className={"Settings-menu-player-name"}>
-                {secondPlayerLabel}
-              </div>
-              <div className={"Settings-menu-checker-wrapper"}>
-                <Checker
-                  color={secondPlayerColor}
-                  checkerPulse={false}
-                  status={CheckerStatus.None}
-                  onAnimationComplete={() => {}}
-                  animation={null}
-                />
-              </div>
-            </div>
-          </div>
+        <div className={"Settings-tabs"}>
+          {tabButton(SettingsTab.Checkers, "Checkers")}
+          {tabButton(SettingsTab.Board, "Board")}
+          {tabButton(SettingsTab.Background, "Background")}
+          {tabButton(SettingsTab.Effects, "Effects")}
         </div>
-        <div className={"Settings-option-row bottom"}>
-          <div className={"Settings-checker-direction-label"}>
-            Movement direction
-          </div>
-          <div
-            className={"Settings-option-movement-diagram-wrapper"}
-            onClick={toggleMovementDirection}
-          >
-            <div
-              className={cx("Settings-option-movement-diagram", {
-                light: firstPlayerColor === Color.White,
-                dark: firstPlayerColor === Color.Black,
-                cw:
-                  (playerPerspective === Player.One &&
-                    settings.movementDirection ===
-                      MovementDirection.Clockwise) ||
-                  (playerPerspective === Player.Two &&
-                    settings.movementDirection ===
-                      MovementDirection.CounterClockwise),
-              })}
-            />
-          </div>
-        </div>
+        {activeTab === SettingsTab.Checkers ? checkerTab : null}
+        {activeTab === SettingsTab.Board ? boardTab : null}
+        {activeTab === SettingsTab.Background ? backgroundTab : null}
+        {activeTab === SettingsTab.Effects ? effectsTab : null}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="primary" onClick={closeDialog}>

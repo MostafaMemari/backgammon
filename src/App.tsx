@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect } from "react";
 import cx from "classnames";
 import "./App.scss";
 
@@ -9,6 +9,8 @@ import NetworkedGameRoom, {
 } from "./NetworkedGameRoom";
 import LocalGameRoom from "./LocalGameRoom";
 import WipeTransition from "./WipeTransition";
+import { useAppSelector } from "./store/hooks";
+import { applyVisualSettings } from "./themes";
 
 type AppProps = {};
 
@@ -28,6 +30,13 @@ const App: FunctionComponent<AppProps> = () => {
       loader: NetworkedGameRoomLoader,
     },
   ]);
+
+  // Push the user's selected themes and effect intensities into CSS custom
+  // properties. Re-running this on every settings change is cheap.
+  const settings = useAppSelector((state) => state.settings);
+  useEffect(() => {
+    applyVisualSettings(settings);
+  }, [settings]);
 
   const initialFloatingCircles = new Array(50);
   for (let i = 0; i < 50; i++) {

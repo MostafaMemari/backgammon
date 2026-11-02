@@ -56,7 +56,7 @@ const MainMenu: FunctionComponent<MainMenuProps> = () => {
         {onlineButtonOrSpinner}
       </div>
       <div className={"Credits-text"}>
-        <div>Backgammon v 1.0.2.574dced</div>
+        <div>Backgammon v 1.1.0</div>
         <div>by Sam Swarr (sam-swarr.github.io)</div>
         <div>font Barlow by Jeremy Tribby</div>
       </div>

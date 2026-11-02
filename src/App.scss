@@ -1,3 +1,44 @@
+/***************************
+ * Theme variables (defaults; overridden at runtime by themes.tsx)
+ ***************************/
+:root {
+  --frame-grad: linear-gradient(to bottom, #7A5222, #33200C);
+  --field-grad: linear-gradient(to bottom, #EBD9AC, #D9C08C);
+  --point-a: #F2DCA8;
+  --point-b: #AE4A31;
+  --point-a-edge: #C2A06A;
+  --point-b-edge: #7C3020;
+  --bar-grad: linear-gradient(to bottom, #2E4E7E, #16283F);
+  --home-grad: linear-gradient(to bottom, #2E4E7E, #16283F);
+  --hinge-grad: linear-gradient(to bottom, #F0D092, #8A6435 55%, #5C3E1C);
+  --highlight-color: #FFDF8F;
+  --vignette-alpha: 0.24;
+  --app-bg: linear-gradient(to bottom, #262D4D, #10121F);
+  --circle-color: #83919e24;
+  --checker-a: url("assets/checker-light.svg");
+  --checker-a-sel: url("assets/checker-light-selected.svg");
+  --checker-b: url("assets/checker-dark.svg");
+  --checker-b-sel: url("assets/checker-dark-selected.svg");
+  --checker-home-a: url("assets/checker-home-light.svg");
+  --checker-home-b: url("assets/checker-home-dark.svg");
+  --card-grad: linear-gradient(160deg, #3A2C18, #201408);
+  --card-grad-bottom: linear-gradient(160deg, #2C2010, #160D04);
+  --card-border: #6E4A22;
+  --card-glow: #F0D092;
+  --shadow-scale: 1;
+  --shadow-alpha: 0.45;
+  --checker-shadow-alpha: 0.39;
+  --vignette-scale: 1;
+  --anim-scale: 0.7;
+  --hover-scale: 1.084;
+  --glow-min: 0.45;
+  --glow-max: 0.9;
+
+  /* Shared procedural textures generated in themes.tsx */
+  --wood-grain: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22420%22%20height%3D%22420%22%3E%3Cfilter%20id%3D%22w%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.012%200.22%22%20numOctaves%3D%224%22%20seed%3D%2211%22%2F%3E%3CfeColorMatrix%20type%3D%22matrix%22%20values%3D%220%200%200%200%200.5%200%200%200%200%200.5%200%200%200%200%200.5%200.6%200.6%200.6%200%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22420%22%20height%3D%22420%22%20filter%3D%22url(%23w)%22%2F%3E%3C%2Fsvg%3E");
+  --field-grain: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%3E%3Cfilter%20id%3D%22f%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.9%22%20numOctaves%3D%222%22%20seed%3D%224%22%2F%3E%3CfeColorMatrix%20type%3D%22matrix%22%20values%3D%220%200%200%200%200.5%200%200%200%200%200.5%200%200%200%200%200.5%200.5%200.5%200.5%200%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20filter%3D%22url(%23f)%22%2F%3E%3C%2Fsvg%3E");
+}
+
 .App {
   text-align: center;
 }
@@ -15,7 +56,10 @@
 
 .App-wrapper {
   align-items: center;
-  background: linear-gradient(to bottom, #262D4D, #10121F) border-box;
+  background-color: #10121F;
+  background-image:
+    radial-gradient(ellipse at 50% 42%, rgba(0, 0, 0, 0) 46%, rgba(0, 0, 0, 0.55) 100%),
+    var(--app-bg);
   display: flex;
   flex-direction: column;
   font-family: 'Barlow', sans-serif;
@@ -91,12 +135,12 @@
 }
 
 .Begin-game-button, .Roll-button, .Offer-double-button, .Forfeit-game-button, .Accept-double-button {
-  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
   border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.3), 0 calc(0.4vh * var(--shadow-scale)) calc(0.8vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha));
   color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
@@ -109,7 +153,8 @@
 }
 
 .Begin-game-button:hover, .Settings-menu-button:hover, .Roll-button:hover, .Offer-double-button:hover, .Forfeit-game-button:hover, .Accept-double-button:hover {
-  transform: scale(110%);
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.35), 0 calc(0.5vh * var(--shadow-scale)) calc(1.1vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha)), 0 0 1.2vh rgba(255, 223, 143, 0.35);
+  transform: scale(var(--hover-scale, 110%));
 }
 
 .Game-board-wrapper {
@@ -212,7 +257,7 @@
 .Local-multiplayer-button:active,
 .Online-multiplayer-button:hover,
 .Online-multiplayer-button:active {
-  transform: scale(105%);
+  transform: scale(var(--hover-scale, 105%));
 }
 
 .Online-multiplayer-button-spinner {
@@ -368,12 +413,12 @@
 }
 
 .Start-game-button {
-  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
   border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.3), 0 calc(0.4vh * var(--shadow-scale)) calc(0.8vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha));
   color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
@@ -386,7 +431,7 @@
 }
 
 .Start-game-button:hover {
-  transform: scale(105%);
+  transform: scale(var(--hover-scale, 105%));
 }
 
 .Doubling-cube-toggle-form {
@@ -464,14 +509,15 @@
 }
 
 .Match-points-button:hover, .Match-points-button:active {
-  transform: scale(105%);
+  transform: scale(var(--hover-scale, 105%));
 }
 
 .Player-card-wrapper {
-  background: #2B1A0C;
-  border: min(5px, 0.4vw) solid #6E4A22;
+  background: var(--card-grad, linear-gradient(160deg, #3A2C18, #201408));
+  border: min(5px, 0.4vw) solid var(--card-border, #6E4A22);
   border-radius: min(1vw, 1em) min(1vw, 1em) 0 0;
   border-bottom-style: none;
+  box-shadow: inset 0 0.15vh 0 rgba(255, 233, 192, 0.18);
   color: #E3D5B8;
   display: flex;
   height: 9%;
@@ -481,7 +527,7 @@
 }
 
 .Player-card-wrapper.current {
-  filter: drop-shadow(0 0 1vh #f7dcab);
+  filter: drop-shadow(0 0 1vh var(--card-glow, #F0D092));
 }
 
 .Player-card-wrapper.cw {
@@ -489,8 +535,8 @@
 }
 
 .Player-card-wrapper.bottom {
-  background: #1F1309;
-  border: min(5px, 0.4vw) solid #56371A;
+  background: var(--card-grad-bottom, linear-gradient(160deg, #2C2010, #160D04));
+  border: min(5px, 0.4vw) solid var(--card-border, #56371A);
   border-radius: 0 0 min(1vw, 1em) min(1vw, 1em);
   border-top-style: none;
 }
@@ -580,12 +626,10 @@
 }
 
 .Game-area-wrapper {
-  filter: drop-shadow(0 0 0.5vh #000000);
+  filter: drop-shadow(0 0 calc(0.5vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha)));
 }
 
 .Game-board-half {
-  background-image: url("assets/board-background.svg");
-  background-size: cover;
   border-color: #212529;
   border-width: 0.8vh;
   display: flex;
@@ -598,10 +642,12 @@
 }
 
 .Game-board-half.left {
-  background:
-  url("assets/board-background.svg") padding-box,
-  linear-gradient(to bottom, #6E4A28, #3D2610) border-box;
-  border: min(5px, 0.4vw) solid transparent;
+  background-image: var(--field-grain), var(--field-grad), var(--frame-grad);
+  background-origin: padding-box, padding-box, border-box;
+  background-clip: padding-box, padding-box, border-box;
+  background-size: 30vh 30vh, cover, cover;
+  background-blend-mode: soft-light, normal, normal;
+  border: min(8px, 0.6vw) solid transparent;
   border-right-style: none;
   border-top-left-radius: min(1vw, 1em);
   border-bottom-left-radius: min(1vw, 1em);
@@ -613,16 +659,35 @@
 }
 
 .Game-board-half.right {
-  background:
-  url("assets/board-background.svg") padding-box,
-  linear-gradient(to bottom, #6E4A28, #3D2610) border-box;
-  border: min(5px, 0.4vw) solid transparent;
+  background-image: var(--field-grain), var(--field-grad), var(--frame-grad);
+  background-origin: padding-box, padding-box, border-box;
+  background-clip: padding-box, padding-box, border-box;
+  background-size: 30vh 30vh, cover, cover;
+  background-blend-mode: soft-light, normal, normal;
+  border: min(8px, 0.6vw) solid transparent;
   border-left-style: none;
 }
 
 .Game-board-half.right.cw {
   border-top-right-radius: min(1vw, 1em);
   border-bottom-right-radius: min(1vw, 1em);
+}
+
+// Realism overlay for each board half: inner vignette shadow around the
+// playing field plus a soft top sheen, like lacquered wood catching light.
+.Game-board-half::after {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 18%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, calc(var(--vignette-alpha) * var(--vignette-scale))) 100%);
+  border-radius: inherit;
+  content: "";
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 2;
 }
 
 .Game-board-quadrant {
@@ -637,10 +702,13 @@
 }
 
 .Game-board-bar {
-  background:
-  url("assets/dots.svg") center/420% padding-box,
-  linear-gradient(to bottom, #2E4E7E, #16283F) border-box;
-  border: min(5px, 0.4vw) solid transparent;
+  background-image: var(--field-grain), var(--bar-grad);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  background-size: 12vh 12vh, cover;
+  background-blend-mode: soft-light, normal;
+  border: min(8px, 0.6vw) solid transparent;
+  box-shadow: inset 0 0 1.2vh rgba(0, 0, 0, calc(0.45 * var(--vignette-scale)));
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -653,9 +721,9 @@
 // Metal hinge clasps at the top and bottom of the bar, like a real folding
 // backgammon case (see the reference theme).
 .Game-board-bar::before, .Game-board-bar::after {
-  background: linear-gradient(to bottom, #F0D092, #8A6435 55%, #5C3E1C);
+  background: var(--hinge-grad);
   border-radius: 0.4vw;
-  box-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.5);
+  box-shadow: 0 calc(0.2vh * var(--shadow-scale)) calc(0.4vh * var(--shadow-scale)) rgba(0, 0, 0, calc(0.5 * var(--shadow-alpha) + 0.15)), inset 0 0.15vh 0 rgba(255, 255, 255, 0.45);
   content: "";
   height: 2.4%;
   left: -15%;
@@ -674,13 +742,16 @@
 }
 
 .Game-board-home {
-  background:
-  url("assets/dots.svg") center/300% padding-box,
-  linear-gradient(to bottom, #2E4E7E, #16283F) border-box;
-  border: min(5px, 0.4vw) solid transparent;
+  background-image: var(--field-grain), var(--home-grad);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  background-size: 12vh 12vh, cover;
+  background-blend-mode: soft-light, normal;
+  border: min(8px, 0.6vw) solid transparent;
   border-left-style: none;
   border-top-right-radius: min(1vw, 1em);
   border-bottom-right-radius: min(1vw, 1em);
+  box-shadow: inset 0 0 1.2vh rgba(0, 0, 0, calc(0.4 * var(--vignette-scale)));
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -709,34 +780,72 @@
 .Point-wrapper-highlight {
   height: 100%;
   margin-left: 10%;
+  pointer-events: none;
   position: absolute;
   width: 80%;
-  z-index: 1;
+  z-index: 2;
 }
 
 .Point-wrapper-highlight.from {
-  background-color: #e4cb6454;
+  background: var(--highlight-color);
+  opacity: calc(0.16 + 0.16 * var(--anim-scale));
 }
 
 .Point-wrapper-highlight.to {
-  background: url("assets/stripes.svg");
-  background-size: cover;
+  animation: point-glow 1.15s ease-in-out infinite alternate;
+  opacity: calc(0.55 + 0.45 * var(--anim-scale));
+}
+
+.Point-wrapper-highlight.to.bottom {
+  background: linear-gradient(to top, var(--highlight-color) 24%, rgba(255, 223, 143, 0.35) 60%, transparent 100%);
+}
+
+.Point-wrapper-highlight.to.top {
+  background: linear-gradient(to bottom, var(--highlight-color) 24%, rgba(255, 223, 143, 0.35) 60%, transparent 100%);
+}
+
+// Pulsing landing marker at the base edge of destination points.
+.Point-wrapper-highlight.to::after {
+  background: radial-gradient(circle, #FFFFFF 0%, var(--highlight-color) 42%, transparent 72%);
+  border-radius: 50%;
+  content: "";
+  height: 30%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 46%;
+}
+
+.Point-wrapper-highlight.to.bottom::after {
+  bottom: 1.5%;
+}
+
+.Point-wrapper-highlight.to.top::after {
+  top: 1.5%;
+}
+
+@keyframes point-glow {
+  from {
+    opacity: calc(0.4 + 0.3 * var(--anim-scale));
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .Point-wrapper-highlight.noMove {
-  animation-duration: 1s;
-  animation-name: nomove;
+  animation: nomove 1s ease-out;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 66, 48, 0.55), rgba(255, 66, 48, 0.25) 70%, transparent 100%);
 }
 
 @keyframes nomove {
   from {
-    background: url("assets/stripes-red.svg");
-    background-size: cover;
+    opacity: 0.95;
   }
 
   to {
-    background: url("assets/stripes-red-fade.svg");
-    background-size: cover;
+    opacity: 0;
   }
 }
 
@@ -774,21 +883,21 @@
 }
 
 .Point-triangle-inner.top {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%237A4A1E' fill-opacity='0.55'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFE9B8' fill-opacity='0.5'/%3E%3C/svg%3E"), linear-gradient(to bottom, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%23FFFFFF' fill-opacity='0.16'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFFFFF' fill-opacity='0.18'/%3E%3C/svg%3E"), linear-gradient(to bottom, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
   background-position: center 9%, center;
 }
 
 .Point-triangle-inner.bottom {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%237A4A1E' fill-opacity='0.55'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFE9B8' fill-opacity='0.5'/%3E%3C/svg%3E"), linear-gradient(to top, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%23FFFFFF' fill-opacity='0.16'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFFFFF' fill-opacity='0.18'/%3E%3C/svg%3E"), linear-gradient(to top, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
   background-position: center 91%, center;
 }
 
 .Point-triangle-inner.even {
-  background-color: #F2DCA8;
+  background-color: var(--point-a);
 }
 
 .Point-triangle-inner.odd {
-  background-color: #AE4A31;
+  background-color: var(--point-b);
 }
 
 .Point-triangle.top, .Point-triangle-inner.top {
@@ -800,11 +909,11 @@
 }
 
 .Point-triangle.even {
-  background-color: #C2A06A;
+  background-color: var(--point-a-edge);
 }
 
 .Point-triangle.odd {
-  background-color: #7C3020;
+  background-color: var(--point-b-edge);
 }
 
 .Checkers-wrapper {
@@ -830,8 +939,8 @@
 }
 
 .Checker {
-  filter: drop-shadow(0 0 0.2vh rgb(0, 0, 0, 0.6));
-  transition: transform 0.3s ease-out, filter 0.5s ease-in-out;
+  filter: drop-shadow(0 calc(0.18vh * var(--shadow-scale)) calc(0.22vh * var(--shadow-scale)) rgba(0, 0, 0, var(--checker-shadow-alpha)));
+  transition: transform 0.3s ease-out, filter 0.35s ease-in-out;
   will-change: transform, filter;
   height: 15%;
   width: 45%;
@@ -839,31 +948,83 @@
 }
 
 .Checker.white {
-  background-image: url("assets/checker-light.svg");
+  background-image: var(--checker-a);
   background-repeat: no-repeat;
+  background-size: contain;
 }
 
-.Checker.highlighted-pulse, .Checker.selected-pulse {
-  filter: drop-shadow(0 0 0.5vh #f7dcab);
+// Movable checkers glow clearly so the player can spot them instantly.
+.Checker.highlighted {
+  filter:
+    drop-shadow(0 0 0.3vh var(--highlight-color))
+    drop-shadow(0 0 0.75vh var(--highlight-color))
+    brightness(1.14);
+}
+
+.Checker.highlighted-pulse {
+  animation: checker-glow-pulse 0.7s ease-in-out infinite alternate;
+  filter:
+    drop-shadow(0 0 0.4vh var(--highlight-color))
+    drop-shadow(0 0 0.95vh var(--highlight-color))
+    brightness(1.2);
+}
+
+@keyframes checker-glow-pulse {
+  from {
+    filter:
+      drop-shadow(0 0 0.22vh var(--highlight-color))
+      drop-shadow(0 0 0.55vh var(--highlight-color))
+      brightness(1.1);
+  }
+  to {
+    filter:
+      drop-shadow(0 0 0.5vh var(--highlight-color))
+      drop-shadow(0 0 1.15vh var(--highlight-color))
+      brightness(1.28);
+  }
+}
+
+// The selected checker gets a golden ring baked into its image plus a
+// strong halo so the "source" of the move is unmistakable.
+.Checker.selected-pulse {
+  animation: checker-selected-pulse 0.9s ease-in-out infinite alternate;
+  filter:
+    drop-shadow(0 0 0.45vh var(--highlight-color))
+    drop-shadow(0 0 1.05vh var(--highlight-color))
+    brightness(1.18);
+}
+
+@keyframes checker-selected-pulse {
+  from {
+    filter:
+      drop-shadow(0 0 0.3vh var(--highlight-color))
+      drop-shadow(0 0 0.75vh var(--highlight-color))
+      brightness(1.12);
+  }
+  to {
+    filter:
+      drop-shadow(0 0 0.6vh var(--highlight-color))
+      drop-shadow(0 0 1.3vh var(--highlight-color))
+      brightness(1.3);
+  }
 }
 
 .Checker.white.selected-pulse {
-  background-image: url("assets/checker-light-selected.svg");
+  background-image: var(--checker-a-sel);
   background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .Checker.black.selected-pulse {
-  background-image: url("assets/checker-dark-selected.svg");
+  background-image: var(--checker-b-sel);
   background-repeat: no-repeat;
-}
-
-.Checker.highlighted, .Checker.selected {
-  filter: drop-shadow(0 0 0.1vh #f7dcab);
+  background-size: contain;
 }
 
 .Checker.black {
-  background-image: url("assets/checker-dark.svg");
+  background-image: var(--checker-b);
   background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .Player-one-bar-checkers, .Player-two-bar-checkers {
@@ -881,15 +1042,17 @@
 }
 
 .Player-one-bar-checkers.highlight {
-  background-color: #e4cb6454;
+  background: linear-gradient(to top, transparent, var(--highlight-color));
   border-bottom-left-radius: 5vh;
   border-bottom-right-radius: 5vh;
+  opacity: calc(0.35 + 0.3 * var(--anim-scale));
 }
 
 .Player-two-bar-checkers.highlight {
-  background-color: #e4cb6454;
+  background: linear-gradient(to bottom, transparent, var(--highlight-color));
   border-top-left-radius: 5vh;
   border-top-right-radius: 5vh;
+  opacity: calc(0.35 + 0.3 * var(--anim-scale));
 }
 
 .Game-board-bar-spacer {
@@ -909,19 +1072,19 @@
 }
 
 .Player-one-home-checkers .Checker.white {
-  background-image: url("assets/checker-home-light.svg");
+  background-image: var(--checker-home-a);
 }
 
 .Player-one-home-checkers .Checker.black {
-  background-image: url("assets/checker-home-dark.svg");
+  background-image: var(--checker-home-b);
 }
 
 .Player-two-home-checkers .Checker.white {
-  background-image: url("assets/checker-home-light.svg");
+  background-image: var(--checker-home-a);
 }
 
 .Player-two-home-checkers .Checker.black {
-  background-image: url("assets/checker-home-dark.svg");
+  background-image: var(--checker-home-b);
 }
 
 .Player-one-home-checkers, .Player-two-home-checkers.p2 {
@@ -933,17 +1096,19 @@
 }
 
 .Player-one-home-checkers.highlighted {
-  background: url("assets/stripes.svg");
+  background: linear-gradient(to bottom, var(--highlight-color), transparent);
   background-size: cover;
   border-top-left-radius: 1vh;
   border-top-right-radius: 1vh;
+  opacity: calc(0.4 + 0.3 * var(--anim-scale));
 }
 
 .Player-two-home-checkers.highlighted {
-  background: url("assets/stripes.svg");
+  background: linear-gradient(to top, var(--highlight-color), transparent);
   background-size: cover;
   border-bottom-left-radius: 1vh;
   border-bottom-right-radius: 1vh;
+  opacity: calc(0.4 + 0.3 * var(--anim-scale));
 }
 
 .Game-board-home-spacer {
@@ -997,10 +1162,11 @@
 }
 
 .Settings-menu .modal-content, .Game-over-dialog .modal-content {
-  background-color: #F0E4C9;
-  border: 0.5vw solid #7A5222;
+  background: linear-gradient(165deg, #362D24, #1B1510);
+  border: 1px solid rgba(240, 208, 146, 0.4);
   border-radius: 1vw;
-  color: #3A2A14;
+  box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.65), inset 0 0.1vh 0 rgba(255, 233, 192, 0.14);
+  color: #F0E4C9;
   font-family: 'Barlow', sans-serif;
 }
 
@@ -1013,7 +1179,13 @@
 }
 
 .Settings-menu .modal-header, .Game-over-dialog .modal-header {
-  border-bottom: 1px solid rgb(122, 82, 34);
+  border-bottom: 1px solid rgba(240, 208, 146, 0.28);
+}
+
+.Settings-menu .modal-title, .Game-over-dialog .modal-title {
+  color: #FFE9C0;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .Game-over-dialog .modal-header {
@@ -1059,7 +1231,7 @@
 }
 
 .Settings-menu .modal-footer, .Game-over-dialog .modal-footer {
-  border-top: 1px solid rgb(122, 82, 34);
+  border-top: 1px solid rgba(240, 208, 146, 0.28);
 }
 
 .Settings-menu .modal-body, .Game-over-dialog .modal-body {
@@ -1067,13 +1239,16 @@
 }
 
 .Settings-menu .modal-footer .btn, .Game-over-dialog .modal-footer .btn {
-  background-color: #7A5222;
-  border-color: rgb(79, 51, 18);
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
+  border-color: rgba(201, 162, 90, 0.85);
   border-width: 0.2vh;
+  color: #FFE9C0;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .Settings-menu .Settings-option-row {
-  border-bottom: 1px solid rgb(122, 82, 34);
+  border-bottom: 1px solid rgba(240, 208, 146, 0.22);
   display: flex;
   justify-content: space-between;
 }
@@ -1494,17 +1669,17 @@ $floating-circle-count: 50;
   width: var(--radius);
   height: var(--radius);
   border-radius: 50%;
-  background-color: #83919e24;
+  background-color: var(--circle-color);
   pointer-events: none;
   opacity: 0%;
   animation: float-around-initial var(--animation-duration) 0s ease-in;
 
   @keyframes float-around-initial {
     0% {
-      opacity: var(--starting-opacity);
+      opacity: calc(var(--starting-opacity) * var(--anim-scale));
     }
     50% {
-      opacity: var(--max-opacity);
+      opacity: calc(var(--max-opacity) * var(--anim-scale));
     }
     100% {
       transform: translateX(var(--float-x)) translateY(var(--float-y));
@@ -1536,7 +1711,7 @@ $floating-circle-count: 50;
   width: var(--radius);
   height: var(--radius);
   border-radius: 50%;
-  background-color: #83919e24;
+  background-color: var(--circle-color);
   pointer-events: none;
   opacity: 0%;
   animation: float-around var(--animation-duration) var(--delay) ease-in infinite;
@@ -1546,7 +1721,7 @@ $floating-circle-count: 50;
       opacity: 0%;
     }
     50% {
-      opacity: var(--max-opacity);
+      opacity: calc(var(--max-opacity) * var(--anim-scale));
     }
     100% {
       transform: translateX(var(--float-x)) translateY(var(--float-y));
@@ -1651,12 +1826,12 @@ $floating-circle-count: 50;
 }
 
 .Room-connection-error-menu-button {
-  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
   border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.3), 0 calc(0.4vh * var(--shadow-scale)) calc(0.8vh * var(--shadow-scale)) rgba(0, 0, 0, var(--shadow-alpha));
   color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
@@ -1673,5 +1848,246 @@ $floating-circle-count: 50;
 }
 
 .Room-connection-error-menu-button:hover, .Room-connection-error-menu-button:active {
-  transform: scale(105%);
+  transform: scale(var(--hover-scale, 105%));
+}
+/***************************
+ * Settings panel (tabs,
+ * theme swatches, sliders)
+ ***************************/
+.Settings-menu .modal-content {
+  width: min(92vw, 560px);
+}
+
+.Settings-menu .modal-body {
+  padding: 3% 4%;
+}
+
+.Settings-tabs {
+  display: flex;
+  gap: 2%;
+  margin-bottom: 4%;
+  width: 100%;
+}
+
+.Settings-tab {
+  background: rgba(255, 233, 192, 0.06);
+  border: 1px solid rgba(240, 208, 146, 0.22);
+  border-radius: 0.6vw;
+  color: #CBB98F;
+  cursor: pointer;
+  flex: 1;
+  font-family: 'Barlow', sans-serif;
+  font-size: max(0.75em, 0.8vw);
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  padding: 1.2vh 0;
+  text-align: center;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Settings-tab:hover {
+  background: rgba(255, 233, 192, 0.12);
+  color: #F0E4C9;
+}
+
+.Settings-tab.active {
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
+  border-color: #C9A25A;
+  box-shadow: 0 0 0.8vh rgba(255, 223, 143, 0.25);
+  color: #FFE9C0;
+}
+
+.Settings-section-title {
+  color: #FFE9C0;
+  font-size: max(0.8em, 0.85vw);
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  margin: 2% 0 2.5%;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.Settings-theme-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5%;
+  justify-content: center;
+  margin-bottom: 4%;
+  width: 100%;
+}
+
+.Settings-theme-chip {
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(240, 208, 146, 0.25);
+  border-radius: 0.7vw;
+  cursor: pointer;
+  padding: 1.2%;
+  transition: 0.15s;
+  width: 17.5%;
+}
+
+.Settings-theme-chip:hover {
+  border-color: rgba(240, 208, 146, 0.6);
+  transform: translateY(-2px);
+}
+
+.Settings-theme-chip.selected {
+  border-color: #FFDF8F;
+  box-shadow: 0 0 1vh rgba(255, 223, 143, 0.45);
+}
+
+.Settings-chip-preview {
+  border-radius: 0.45vw;
+  height: 6.5vh;
+  min-height: 40px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.Settings-chip-name {
+  color: #CBB98F;
+  font-size: max(0.6em, 0.62vw);
+  margin-top: 6%;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.Settings-theme-chip.selected .Settings-chip-name {
+  color: #FFE9C0;
+  font-weight: bold;
+}
+
+// Two overlapping checkers for the checker-set chips.
+.Settings-checker-pair {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.Settings-checker-pair .pair-checker {
+  border-radius: 50%;
+  height: 68%;
+  position: absolute;
+  top: 16%;
+  width: 42%;
+}
+
+.Settings-checker-pair .pair-checker.first {
+  left: 4%;
+  z-index: 1;
+}
+
+.Settings-checker-pair .pair-checker.second {
+  right: 4%;
+  z-index: 2;
+}
+
+// Mini board preview for board theme chips: frame + field + two triangles.
+.Settings-board-preview {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.Settings-board-preview .mini-field {
+  border-radius: 0.35vw;
+  height: 74%;
+  left: 12%;
+  overflow: hidden;
+  position: absolute;
+  top: 13%;
+  width: 76%;
+}
+
+.Settings-board-preview .mini-triangle {
+  height: 60%;
+  position: absolute;
+  width: 34%;
+}
+
+.Settings-board-preview .mini-triangle.a {
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  left: 10%;
+  top: 0;
+}
+
+.Settings-board-preview .mini-triangle.b {
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  right: 10%;
+  top: 0;
+}
+
+.Settings-slider-row {
+  align-items: center;
+  display: flex;
+  margin-bottom: 3.5%;
+  width: 100%;
+}
+
+.Settings-slider-label {
+  color: #E3D5B8;
+  font-size: max(0.75em, 0.78vw);
+  width: 42%;
+}
+
+.Settings-slider {
+  flex: 1;
+  height: 1.4vh;
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(to right, #C9A25A var(--fill, 50%), rgba(255, 233, 192, 0.15) var(--fill, 50%));
+  border-radius: 1vh;
+  cursor: pointer;
+  outline: none;
+}
+
+.Settings-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
+  border: 1px solid #5C3E1C;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  height: 2.4vh;
+  width: 2.4vh;
+}
+
+.Settings-slider::-moz-range-thumb {
+  background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
+  border: 1px solid #5C3E1C;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  height: 2.2vh;
+  width: 2.2vh;
+}
+
+.Settings-slider-value {
+  color: #FFE9C0;
+  font-size: max(0.7em, 0.72vw);
+  min-width: 3.2em;
+  text-align: right;
+}
+
+.Settings-hint {
+  color: #A89878;
+  font-size: max(0.62em, 0.64vw);
+  line-height: 1.4;
+  margin-top: 1%;
+}
+
+// When animation intensity is 0%, stop every looping animation entirely.
+.fx-off .Point-wrapper-highlight.to {
+  animation: none;
+}
+
+.fx-off .Checker.highlighted-pulse,
+.fx-off .Checker.selected-pulse {
+  animation: none;
+}
+
+.fx-off .Floating-circle,
+.fx-off .Initial-floating-circle {
+  display: none;
 }

@@ -13,6 +13,7 @@ import doublingCubeReducer from "./doublingCubeSlice";
 import matchScoreReducer from "./matchScoreSlice";
 import wipeTransitionReducer from "./wipeTransitionSlice";
 import readyForNextGameReducer from "./readyForNextGameSlice";
+import { saveVisualPrefs } from "./settingsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -34,3 +35,18 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Persist the user's device-local visual preferences (themes + effect
+// sliders + personal color/direction) whenever they change.
+store.subscribe(() => {
+  const s = store.getState().settings;
+  saveVisualPrefs({
+    boardTheme: s.boardTheme,
+    checkerTheme: s.checkerTheme,
+    backgroundTheme: s.backgroundTheme,
+    shadowIntensity: s.shadowIntensity,
+    animationIntensity: s.animationIntensity,
+    playerOneColor: s.playerOneColor,
+    movementDirection: s.movementDirection,
+  });
+});
