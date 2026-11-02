@@ -15,7 +15,7 @@
 
 .App-wrapper {
   align-items: center;
-  background: linear-gradient(to bottom, #3B4587, #151516) border-box;
+  background: linear-gradient(to bottom, #262D4D, #10121F) border-box;
   display: flex;
   flex-direction: column;
   font-family: 'Barlow', sans-serif;
@@ -63,7 +63,7 @@
 }
 
 .Begin-game-button-wrapper.waiting-text {
-  color: #b8b8b8;
+  color: #E3D5B8;
   font-size: 0.8em;
   justify-content: center;
 }
@@ -91,17 +91,19 @@
 }
 
 .Begin-game-button, .Roll-button, .Offer-double-button, .Forfeit-game-button, .Accept-double-button {
-  background: linear-gradient(to right, #3F3217, #564112);
-  border-color: #816c3d;
+  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  color: #b8b8b8;
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
   font-size: max(1.4vh, 1.4vw);
   padding: 0.5vh;
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   transition: 0.2s;
   width: 11vw;
 }
@@ -366,17 +368,19 @@
 }
 
 .Start-game-button {
-  background: linear-gradient(to right, #3F3217, #564112);
-  border-color: #816c3d;
+  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  color: #b8b8b8;
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
   font-size: max(1.5vh, 1.5vw);
   padding: 0.5vh;
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   transition: 0.2s;
   width: 10vw;
 }
@@ -464,11 +468,11 @@
 }
 
 .Player-card-wrapper {
-  background: #0F142F;
-  border: min(5px, 0.4vw) solid #22274a;
+  background: #2B1A0C;
+  border: min(5px, 0.4vw) solid #6E4A22;
   border-radius: min(1vw, 1em) min(1vw, 1em) 0 0;
   border-bottom-style: none;
-  color: #b8b8b8;
+  color: #E3D5B8;
   display: flex;
   height: 9%;
   position: relative;
@@ -485,8 +489,8 @@
 }
 
 .Player-card-wrapper.bottom {
-  background: #251F13;
-  border: min(5px, 0.4vw) solid #564112;
+  background: #1F1309;
+  border: min(5px, 0.4vw) solid #56371A;
   border-radius: 0 0 min(1vw, 1em) min(1vw, 1em);
   border-top-style: none;
 }
@@ -596,7 +600,7 @@
 .Game-board-half.left {
   background:
   url("assets/board-background.svg") padding-box,
-  linear-gradient(to bottom, #22274A, #564112) border-box;
+  linear-gradient(to bottom, #6E4A28, #3D2610) border-box;
   border: min(5px, 0.4vw) solid transparent;
   border-right-style: none;
   border-top-left-radius: min(1vw, 1em);
@@ -611,7 +615,7 @@
 .Game-board-half.right {
   background:
   url("assets/board-background.svg") padding-box,
-  linear-gradient(to bottom, #22274A, #564112) border-box;
+  linear-gradient(to bottom, #6E4A28, #3D2610) border-box;
   border: min(5px, 0.4vw) solid transparent;
   border-left-style: none;
 }
@@ -635,20 +639,44 @@
 .Game-board-bar {
   background:
   url("assets/dots.svg") center/420% padding-box,
-  linear-gradient(to bottom, #22274A, #564112) border-box;
+  linear-gradient(to bottom, #2E4E7E, #16283F) border-box;
   border: min(5px, 0.4vw) solid transparent;
   display: flex;
   flex-direction: column;
   height: 100%;
   justify-content: space-around;
+  position: relative;
   width: 4%;
   z-index: 1;
+}
+
+// Metal hinge clasps at the top and bottom of the bar, like a real folding
+// backgammon case (see the reference theme).
+.Game-board-bar::before, .Game-board-bar::after {
+  background: linear-gradient(to bottom, #F0D092, #8A6435 55%, #5C3E1C);
+  border-radius: 0.4vw;
+  box-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.5);
+  content: "";
+  height: 2.4%;
+  left: -15%;
+  pointer-events: none;
+  position: absolute;
+  width: 130%;
+  z-index: 6;
+}
+
+.Game-board-bar::before {
+  top: -0.3%;
+}
+
+.Game-board-bar::after {
+  bottom: -0.3%;
 }
 
 .Game-board-home {
   background:
   url("assets/dots.svg") center/300% padding-box,
-  linear-gradient(to bottom, #22274A, #564112) border-box;
+  linear-gradient(to bottom, #2E4E7E, #16283F) border-box;
   border: min(5px, 0.4vw) solid transparent;
   border-left-style: none;
   border-top-right-radius: min(1vw, 1em);
@@ -731,6 +759,9 @@
 }
 
 .Point-triangle-inner {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 38% auto, 100% 100%;
   height: 96%;
   margin-left: 12%;
   position: absolute;
@@ -742,12 +773,22 @@
   margin-top: 12%;
 }
 
+.Point-triangle-inner.top {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%237A4A1E' fill-opacity='0.55'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFE9B8' fill-opacity='0.5'/%3E%3C/svg%3E"), linear-gradient(to bottom, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
+  background-position: center 9%, center;
+}
+
+.Point-triangle-inner.bottom {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L34 20 L20 38 L6 20 Z' fill='%237A4A1E' fill-opacity='0.55'/%3E%3Cpath d='M20 11 L28 20 L20 29 L12 20 Z' fill='%23FFE9B8' fill-opacity='0.5'/%3E%3C/svg%3E"), linear-gradient(to top, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0.14));
+  background-position: center 91%, center;
+}
+
 .Point-triangle-inner.even {
-  background-color: #0F1744;
+  background-color: #F2DCA8;
 }
 
 .Point-triangle-inner.odd {
-  background-color: #885525;
+  background-color: #AE4A31;
 }
 
 .Point-triangle.top, .Point-triangle-inner.top {
@@ -759,11 +800,11 @@
 }
 
 .Point-triangle.even {
-  background-color: #636781;
+  background-color: #C2A06A;
 }
 
 .Point-triangle.odd {
-  background-color: #997345;
+  background-color: #7C3020;
 }
 
 .Checkers-wrapper {
@@ -956,9 +997,10 @@
 }
 
 .Settings-menu .modal-content, .Game-over-dialog .modal-content {
-  background-color: #abafc2;
-  border: 0.5vw solid #636781;
+  background-color: #F0E4C9;
+  border: 0.5vw solid #7A5222;
   border-radius: 1vw;
+  color: #3A2A14;
   font-family: 'Barlow', sans-serif;
 }
 
@@ -971,7 +1013,7 @@
 }
 
 .Settings-menu .modal-header, .Game-over-dialog .modal-header {
-  border-bottom: 1px solid rgb(78, 96, 124);
+  border-bottom: 1px solid rgb(122, 82, 34);
 }
 
 .Game-over-dialog .modal-header {
@@ -1017,7 +1059,7 @@
 }
 
 .Settings-menu .modal-footer, .Game-over-dialog .modal-footer {
-  border-top: 1px solid rgb(78, 96, 124);
+  border-top: 1px solid rgb(122, 82, 34);
 }
 
 .Settings-menu .modal-body, .Game-over-dialog .modal-body {
@@ -1025,13 +1067,13 @@
 }
 
 .Settings-menu .modal-footer .btn, .Game-over-dialog .modal-footer .btn {
-  background-color: #354e74;
-  border-color: rgb(24 38 61);
+  background-color: #7A5222;
+  border-color: rgb(79, 51, 18);
   border-width: 0.2vh;
 }
 
 .Settings-menu .Settings-option-row {
-  border-bottom: 1px solid rgb(78, 96, 124);
+  border-bottom: 1px solid rgb(122, 82, 34);
   display: flex;
   justify-content: space-between;
 }
@@ -1216,13 +1258,17 @@
 }
 
 .Die-faces.white .Die-face {
-  background-color: rgb(255 243 219);
-  border: 0.2vw solid #b49e70;
+  background-color: #FFF7E4;
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 42%);
+  border: 0.2vw solid #A88C55;
+  box-shadow: inset -0.25vw -0.35vw 0.6vw rgba(120, 90, 40, 0.30), inset 0.25vw 0.35vw 0.6vw rgba(255, 255, 255, 0.55);
 }
 
 .Die-faces.black .Die-face {
-  background-color: rgb(15 16 37);
-  border: 0.2vw solid #767293;
+  background-color: #A93326;
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0) 42%);
+  border: 0.2vw solid #5F1B12;
+  box-shadow: inset -0.25vw -0.35vw 0.6vw rgba(70, 10, 5, 0.45), inset 0.25vw 0.35vw 0.6vw rgba(255, 200, 160, 0.35);
 }
 
 .Die-faces.white.spent .Die-face, .Die-faces.black.spent .Die-face {
@@ -1235,8 +1281,8 @@
 .Die-faces.white.spent.four .Die-face.four,
 .Die-faces.white.spent.five .Die-face.five,
 .Die-faces.white.spent.six .Die-face.six {
-  background-color: rgb(255 243 219 / 30%);
-  border-color: #b49e707a;
+  background-color: rgba(255, 247, 228, 0.30);
+  border-color: rgba(168, 140, 85, 0.48);
   display: grid;
 }
 
@@ -1246,8 +1292,8 @@
 .Die-faces.black.spent.four .Die-face.four,
 .Die-faces.black.spent.five .Die-face.five,
 .Die-faces.black.spent.six .Die-face.six {
-  background-color: rgb(15 16 37 / 15%);
-  border-color: #76729363;
+  background-color: rgba(169, 51, 38, 0.18);
+  border-color: rgba(95, 27, 18, 0.45);
   display: grid;
 }
 
@@ -1258,15 +1304,15 @@
 }
 
 .Die-faces.white .Die-pip {
-  background-color: #1b1c22;
+  background-color: #2B2115;
 }
 
 .Die-faces.black .Die-pip {
-  background-color: #ede2ce;
+  background-color: #F8E8CC;
 }
 
 .Die-faces.black.spent .Die-pip {
-  background-color: #ffffff70;
+  background-color: #F8E8CC70;
 }
 
 .Die-faces.white.spent .Die-pip {
@@ -1356,7 +1402,7 @@
   align-content: center;
   background-image: url("assets/doubling-cube.svg");
   background-repeat: no-repeat;
-  filter: drop-shadow(1px 1px 1px rgb(58, 7, 7));
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.55));
   height: 85%;
   margin-left: 7.5%;
   width: 85%;
@@ -1364,11 +1410,11 @@
 
 .Doubling-cube-value-wrapper {
   align-content: center;
-  color: #FABBBB;
+  color: #F3E3BD;
   font-size: min(1.3vw, 1.3em);
   height: 100%;
   text-align: center;
-  text-shadow: 1px 1px 1px rgb(58, 7, 7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   width: 100%;
 }
 
@@ -1380,7 +1426,7 @@
 }
 
 .Accept-double-menu-text-wrapper {
-  color: #b8b8b8;
+  color: #E3D5B8;
   font-size: max(0.5em, 1.2vw);
 }
 
@@ -1409,7 +1455,7 @@
 
 .Waiting-for-accept-double-wrapper {
   align-items: center;
-  color: #b8b8b8;
+  color: #E3D5B8;
   display: flex;
   font-size: 0.7em;
   height: 12%;
@@ -1605,12 +1651,13 @@ $floating-circle-count: 50;
 }
 
 .Room-connection-error-menu-button {
-  background: linear-gradient(to right, #3F3217, #564112);
-  border-color: #816c3d;
+  background: linear-gradient(to bottom, #7A5222, #4F3312);
+  border-color: #C9A25A;
   border-radius: min(1vw, 1em);
   border-style: double;
   border-width: 0.2em;
-  color: #b8b8b8;
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.25), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.45);
+  color: #FFE9C0;
   font-weight: bold;
   font-family: 'Barlow', sans-serif;
   font-size: max(1em, 1vw);
@@ -1620,6 +1667,7 @@ $floating-circle-count: 50;
   max-width: 175px;
   padding: 0.5vh;
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   transition: 0.2s;
   width: 12vw;
 }

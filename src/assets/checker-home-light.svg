@@ -1,9 +1,12 @@
 <svg width="100%" height="100%" viewBox="0 0 60 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="60" height="12" fill="url(#paint0_linear_56_63706)"/>
 <defs>
-<linearGradient id="paint0_linear_56_63706" x1="0" y1="6" x2="60" y2="6" gradientUnits="userSpaceOnUse">
-<stop stop-color="#F7DDAB"/>
-<stop offset="1" stop-color="#6C6250"/>
+<linearGradient id="hl" x1="0" y1="6" x2="60" y2="6" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFFEF6"/>
+<stop offset="0.55" stop-color="#EBD9AE"/>
+<stop offset="1" stop-color="#C0A371"/>
 </linearGradient>
 </defs>
+<rect width="60" height="12" fill="url(#hl)"/>
+<rect width="60" height="2" fill="#FFFFFF" fill-opacity="0.55"/>
+<rect y="10" width="60" height="2" fill="#6E5B3A" fill-opacity="0.40"/>
 </svg>
