@@ -38,15 +38,22 @@ const App: FunctionComponent<AppProps> = () => {
     applyVisualSettings(settings);
   }, [settings]);
 
-  const initialFloatingCircles = new Array(50);
-  for (let i = 0; i < 50; i++) {
+  // Ambient floating circles are pure decoration. Render far fewer of them
+  // (or none) on weaker devices - 100 slowly animating layers is one of the
+  // heaviest things on the page for an old laptop GPU.
+  const circleCount =
+    settings.performanceMode === "low"
+      ? 0
+      : settings.performanceMode === "medium"
+      ? 14
+      : 50;
+
+  const initialFloatingCircles = [];
+  const floatingCircles = [];
+  for (let i = 0; i < circleCount; i++) {
     initialFloatingCircles.push(
       <div key={i} className={"Initial-floating-circle"} />
     );
-  }
-
-  const floatingCircles = new Array(50);
-  for (let i = 0; i < 50; i++) {
     floatingCircles.push(<div key={i} className={"Floating-circle"} />);
   }
 

@@ -1032,10 +1032,16 @@
 .Checker {
   filter: drop-shadow(0 calc(0.18vh * var(--shadow-scale)) calc(0.22vh * var(--shadow-scale)) rgba(0, 0, 0, var(--checker-shadow-alpha)));
   transition: filter 0.35s ease-in-out, translate 0.25s ease-out;
-  will-change: transform, filter;
   height: 15%;
   width: 45%;
   z-index: 4;
+}
+
+// Only promote the checker that is actually animating. A permanent
+// will-change on all 30 checkers keeps 30 GPU layers alive, which is very
+// expensive on weak laptops for zero benefit when they sit still.
+.Checker.moving {
+  will-change: transform;
 }
 
 // Arc slide: the checker lifts off its point, glides along a shallow arc,
@@ -2368,6 +2374,105 @@ $floating-circle-count: 50;
   animation: none;
 }
 
+/********************************************************
+ * PERFORMANCE MODES (Settings > Effects > Performance)  *
+ *                                                        *
+ * perf-med ("Balanced"): the static look is identical,   *
+ *   but nothing repaints every frame. Infinite glow      *
+ *   pulses become static glows, ambient circles are      *
+ *   trimmed (see App.tsx).                               *
+ * perf-low ("Light"): additionally no drop-shadow        *
+ *   filters at all and no ambient decoration. Move/turn  *
+ *   highlights stay obvious because the green and gold   *
+ *   rings are baked into the checker images themselves.  *
+ ********************************************************/
+
+// --- Balanced: freeze all continuously-repainting animations ---
+.perf-med .Floating-circle,
+.perf-med .Initial-floating-circle {
+  display: none;
+}
+
+.perf-med .Checker.highlighted-pulse {
+  animation: none;
+  filter: drop-shadow(0 0 0.4vh var(--move-color))
+    drop-shadow(0 0 1vh rgba(var(--move-color-rgb), 0.9)) brightness(1.2);
+  translate: 0 -2.5%;
+}
+
+.perf-med .Checker.selected-pulse {
+  animation: none;
+  filter: drop-shadow(0 0 0.45vh var(--highlight-color))
+    drop-shadow(0 0 1.05vh var(--highlight-color)) brightness(1.18);
+}
+
+.perf-med .Point-wrapper-highlight.to {
+  animation: none;
+  opacity: 0.94;
+}
+
+.perf-med .Roll-button-wrapper {
+  animation: none;
+  filter: drop-shadow(
+    0 0 0.9vh rgba(var(--move-color-rgb), calc(0.3 + 0.4 * var(--anim-scale)))
+  );
+}
+
+// --- Light: strip every filter and decorative layer ---
+.perf-low .Floating-circle,
+.perf-low .Initial-floating-circle {
+  display: none;
+}
+
+.perf-low .Checker {
+  filter: none;
+  transition: translate 0.25s ease-out;
+}
+
+.perf-low .Checker.highlighted,
+.perf-low .Checker.highlighted-pulse,
+.perf-low .Checker.selected-pulse {
+  filter: none;
+}
+
+.perf-low .Point-triangle,
+.perf-low .Point-triangle-inner,
+.perf-low .Title-wrapper,
+.perf-low .Local-multiplayer-button,
+.perf-low .Online-multiplayer-button,
+.perf-low .Sound-toggle-button {
+  filter: none;
+}
+
+.perf-low .Point-wrapper-highlight.to {
+  animation: none;
+  opacity: 0.94;
+}
+
+.perf-low .Point-wrapper-highlight.to::after {
+  box-shadow: none;
+}
+
+.perf-low .Roll-button-wrapper {
+  animation: none;
+  filter: none;
+}
+
+// The roll button still needs to draw the eye without a glow filter.
+.perf-low .Roll-button-wrapper .Roll-button {
+  box-shadow: inset 0 0.2vh 0 rgba(255, 233, 192, 0.3),
+    0 calc(0.4vh * var(--shadow-scale)) calc(0.8vh * var(--shadow-scale))
+      rgba(0, 0, 0, var(--shadow-alpha)),
+    0 0 1.1vh rgba(var(--move-color-rgb), 0.65);
+}
+
+// Drop the one-time intro fade of ambient circles along with the circles
+// themselves so nothing decorative is composited at all in Light mode.
+.perf-low .Wipe-transition,
+.perf-low .Wipe-fade {
+  animation-duration: 0.01s;
+}
+
 /*********************
  * QUICK SOUND TOGGLE *
  *********************/
@@ -2468,5 +2573,43 @@ $floating-circle-count: 50;
 .Settings-menu .Settings-sound-toggle.on .Settings-sound-toggle-text {
   color: #DFF2D8;
   margin: 0 2.6vw 0 0.9vw;
+}
+
+/*******************************
+ * SETTINGS: PERFORMANCE SELECT *
+ *******************************/
+.Settings-menu .Settings-perf-toggle {
+  background: rgba(255, 233, 192, 0.08);
+  border: 1px solid rgba(240, 208, 146, 0.35);
+  border-radius: 2vh;
+  cursor: pointer;
+  display: flex;
+  height: 3.2vh;
+  min-height: 26px;
+  min-width: 170px;
+  overflow: hidden;
+  width: 11vw;
+}
+
+.Settings-menu .Settings-perf-option {
+  align-items: center;
+  color: #CBB98F;
+  display: flex;
+  flex: 1;
+  font-size: max(0.6em, 0.62vw);
+  font-weight: bold;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, color 0.2s;
+}
+
+.Settings-menu .Settings-perf-option:hover {
+  color: #F0E2BC;
+}
+
+.Settings-menu .Settings-perf-option.selected {
+  background: linear-gradient(to bottom, #6E8A5C, #46603C);
+  color: #EAF4E2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 

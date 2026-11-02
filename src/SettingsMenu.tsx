@@ -12,6 +12,7 @@ import {
   setBoardTheme,
   setCheckerTheme,
   setMovementDirection,
+  setPerformanceMode,
   setPlayerOneColor,
   setShadowIntensity,
   setShowSettingsMenu,
@@ -24,6 +25,8 @@ import {
   BOARD_THEMES,
   CHECKER_THEMES,
   getCheckerTheme,
+  PerformanceMode,
+  PERFORMANCE_MODES,
 } from "./themes";
 
 type SettingsMenuProps = {
@@ -309,6 +312,24 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
       ) : null}
       <div className={"Settings-section-title"}>Visual effects</div>
       <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Performance</div>
+        <div className={"Settings-perf-toggle"}>
+          {PERFORMANCE_MODES.map((m) => (
+            <div
+              key={m.id}
+              className={cx("Settings-perf-option", {
+                selected: settings.performanceMode === m.id,
+              })}
+              onClick={() =>
+                dispatch(setPerformanceMode(m.id as PerformanceMode))
+              }
+            >
+              {m.name}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className={"Settings-slider-row"}>
         <div className={"Settings-slider-label"}>Shadow depth</div>
         <input
           className={"Settings-slider"}
@@ -345,8 +366,10 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
         </div>
       </div>
       <div className={"Settings-hint"}>
-        Changes apply instantly and are saved on this device. At 0% animations
-        and ambient effects are turned off.
+        Performance: Light removes glow filters and ambient animation for
+        smooth play on modest laptops and browsers. Balanced keeps the look
+        but skips continuous effects. Full enables everything. Changes apply
+        instantly and are saved on this device.
       </div>
     </>
   );

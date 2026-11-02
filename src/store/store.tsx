@@ -50,5 +50,6 @@ store.subscribe(() => {
     soundVolume: s.soundVolume,
     playerOneColor: s.playerOneColor,
     movementDirection: s.movementDirection,
+    performanceMode: s.performanceMode,
   });
 });

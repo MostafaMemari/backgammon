@@ -7,6 +7,8 @@ import {
   DEFAULT_CHECKER_THEME,
   DEFAULT_SHADOW_INTENSITY,
   DEFAULT_SOUND_VOLUME,
+  detectPerformanceMode,
+  PerformanceMode,
 } from "../themes";
 
 const VISUAL_PREFS_KEY = "bg-visual-prefs-v1";
@@ -21,6 +23,7 @@ type VisualPrefs = {
   movementDirection?: MovementDirection;
   soundEnabled?: boolean;
   soundVolume?: number;
+  performanceMode?: PerformanceMode;
 };
 
 export function loadVisualPrefs(): VisualPrefs {
@@ -59,6 +62,9 @@ export const settingsSlice = createSlice({
       prefs.animationIntensity ?? DEFAULT_ANIMATION_INTENSITY,
     soundEnabled: prefs.soundEnabled ?? true,
     soundVolume: prefs.soundVolume ?? DEFAULT_SOUND_VOLUME,
+    // Auto-tuned once per device on first visit (weak laptops start in
+    // Balanced or Light), then always whatever the user picked.
+    performanceMode: prefs.performanceMode ?? detectPerformanceMode(),
     showGameOverDialog: false,
     showSettingsMenu: false,
     showMatchSetupScreen: false,
@@ -106,6 +112,13 @@ export const settingsSlice = createSlice({
       state.soundVolume = action.payload;
       return state;
     },
+    setPerformanceMode: (
+      state,
+      action: { type: string; payload: PerformanceMode }
+    ) => {
+      state.performanceMode = action.payload;
+      return state;
+    },
     setShowGameOverDialog: (
       state,
       action: { type: string; payload: boolean }
@@ -141,6 +154,7 @@ export const {
   setAnimationIntensity,
   setSoundEnabled,
   setSoundVolume,
+  setPerformanceMode,
   setShowGameOverDialog,
   setShowSettingsMenu,
   setShowMatchSetupScreen,

@@ -385,6 +385,59 @@ export const DEFAULT_SHADOW_INTENSITY = 60;
 export const DEFAULT_ANIMATION_INTENSITY = 70;
 export const DEFAULT_SOUND_VOLUME = 70;
 
+/****************************
+ * Performance / quality     *
+ ****************************/
+
+/**
+ * How much rendering power the game is allowed to use:
+ *
+ *  - "high"    Full experience: every glow pulse, ambient circles, all
+ *              filters and transitions.
+ *  - "medium"  Identical static look, but nothing repaints every frame:
+ *              infinite glow pulses become static glows, ambient circles
+ *              are reduced, no perpetual board re-renders.
+ *  - "low"     For weak laptops/browsers: no drop-shadow filters at all,
+ *              no ambient circles, no layered effects. Highlights stay
+ *              perfectly visible because the green/gold rings are baked
+ *              into the checker images.
+ */
+export type PerformanceMode = "high" | "medium" | "low";
+
+export const PERFORMANCE_MODES: { id: PerformanceMode; name: string }[] = [
+  { id: "low", name: "Light" },
+  { id: "medium", name: "Balanced" },
+  { id: "high", name: "Full" },
+];
+
+/**
+ * Guess the best mode for this device on first visit. Runs once, only when
+ * the user has never saved a preference.
+ */
+export function detectPerformanceMode(): PerformanceMode {
+  if (typeof navigator === "undefined") {
+    return "medium";
+  }
+  try {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const cores = nav.hardwareConcurrency ?? 4;
+    const memory = nav.deviceMemory ?? 4; // GB; Chrome/Edge only, else 4.
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia != null &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion || cores <= 2 || memory <= 2) {
+      return "low";
+    }
+    if (cores <= 4 || memory <= 4) {
+      return "medium";
+    }
+    return "high";
+  } catch {
+    return "medium";
+  }
+}
+
 export function getBoardTheme(id: string): BoardThemeDef {
   return BOARD_THEMES.find((t) => t.id === id) ?? BOARD_THEMES[0];
 }
@@ -407,6 +460,7 @@ export type VisualSettings = {
   backgroundTheme: string;
   shadowIntensity: number;
   animationIntensity: number;
+  performanceMode: PerformanceMode;
 };
 
 function clamp01(v: number): number {
@@ -487,6 +541,13 @@ export function applyVisualSettings(s: VisualSettings): void {
 
   // Hard-kill all looping animations when the slider is at zero.
   document.body.classList.toggle("fx-off", anim <= 0.001);
+
+  // Performance mode: cheap rendering tiers for weak devices. "medium" keeps
+  // every visual feature but removes all per-frame repaint work; "low"
+  // additionally removes filters and ambient layers entirely.
+  const mode: PerformanceMode = s.performanceMode ?? "medium";
+  document.body.classList.toggle("perf-med", mode !== "high");
+  document.body.classList.toggle("perf-low", mode === "low");
 }
 
 export function colorToCssGradientOfChecker(

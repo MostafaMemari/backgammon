@@ -392,14 +392,22 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
     };
   }, []);
 
-  // Setup checker pulse animation timer
+  // Setup checker pulse animation timer. This timer swaps a class on every
+  // highlighted checker every 700ms, which re-renders the whole board and
+  // re-rasterizes their glow filters - expensive on weak devices. Outside
+  // "Full" performance mode the glow is static (CSS keeps it visible), so
+  // the timer only runs in Full mode.
   const [checkerPulse, setCheckerPulse] = useState(false);
+  const performanceMode = settings.performanceMode;
   useEffect(() => {
+    if (performanceMode !== "high") {
+      return;
+    }
     const interval = setInterval(() => {
-      setCheckerPulse(!checkerPulse);
+      setCheckerPulse((prev) => !prev);
     }, CHECKER_ANIMATION_PULSE_TIMER_MS);
     return () => clearInterval(interval);
-  }, [checkerPulse]);
+  }, [performanceMode]);
 
   // Chime when it becomes this client's turn to act.
   const prevTurnKeyRef = useRef("");
