@@ -32,7 +32,7 @@ const MatchSettingsMenu: FunctionComponent<MatchSettingsMenuProps> = ({
 
   let urlRow = null;
   if (roomCode !== null) {
-    const url = "sam-swarr.github.io/backgammon/" + roomCode;
+    const url = window.location.origin + "/" + roomCode;
     urlRow = (
       <div className={"Url-copy-row"}>
         <div className={"Url-title-wrapper"} />
