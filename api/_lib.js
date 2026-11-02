@@ -15,7 +15,13 @@ const PROJECT_ID =
   "backgammon-mostafa";
 
 const API_KEY =
-  process.env.FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY || "";
+  process.env.FIREBASE_API_KEY ||
+  process.env.REACT_APP_FIREBASE_API_KEY ||
+  // Fallback to the app's public Firebase Web API key (the same key that used
+  // to be baked into the client bundle — Web API keys are not secrets; access
+  // is controlled by the Firestore security rules). This makes the functions
+  // work even when no environment variables are configured on Vercel.
+  "AIzaSyCDJy6g8Q-vx6DOQgYQdpSYLro-x9MCCaY";
 
 const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
