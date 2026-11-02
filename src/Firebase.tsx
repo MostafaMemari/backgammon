@@ -262,7 +262,7 @@ export async function findLobby(roomCode: string): Promise<LobbyRef | null> {
   let result: LobbyResponse;
   try {
     result = await apiRequest<LobbyResponse>(
-      `/api/lobbies/${encodeURIComponent(roomCode)}`
+      `/api/room?code=${encodeURIComponent(roomCode)}`
     );
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
@@ -308,7 +308,7 @@ async function updateLobby(
   data: Record<string, unknown>
 ): Promise<void> {
   await apiRequest<{ ok: boolean }>(
-    `/api/lobbies/${encodeURIComponent(docRef.roomCode)}`,
+    `/api/room?code=${encodeURIComponent(docRef.roomCode)}`,
     {
       method: "POST",
       body: JSON.stringify({ data }),
@@ -490,7 +490,7 @@ export function subscribeToLobby(
     let result: LobbyResponse;
     try {
       result = await apiRequest<LobbyResponse>(
-        `/api/lobbies/${encodeURIComponent(docRef.roomCode)}`
+        `/api/room?code=${encodeURIComponent(docRef.roomCode)}`
       );
     } catch (error) {
       if (disposed) {

@@ -1,10 +1,13 @@
-// GET  /api/lobbies/:id — read the lobby document (used for polling).
-// POST /api/lobbies/:id — merge-update fields of the lobby document.
+// GET  /api/room?code=ABCD — read the lobby document (used for polling).
+// POST /api/room?code=ABCD — merge-update fields of the lobby document.
 //
-// The :id is the 4-letter room code, which doubles as the Firestore document
-// ID. POST bodies look like { data: { ...fields } } and are applied with a
-// leaf-field update mask, mirroring the previous setDoc(..., { merge: true })
-// behaviour.
+// Room creation lives in /api/lobbies (POST). This endpoint deliberately uses
+// a plain static path + query parameter instead of a dynamic [id] segment:
+// plain paths are the most robust thing on Vercel's routing layer and need no
+// dynamic-route support to work.
+//
+// POST bodies look like { data: { ...fields } } and are applied with a
+// leaf-field update mask, mirroring setDoc(..., { merge: true }).
 
 const {
   commitLobbyUpdate,
@@ -12,10 +15,10 @@ const {
   getLobbyDoc,
   readJsonBody,
   sendJson,
-} = require("../_lib");
+} = require("./_lib");
 
 module.exports = async (req, res) => {
-  const roomCode = String(req.query.id || "").toUpperCase();
+  const roomCode = String((req.query && req.query.code) || "").toUpperCase();
 
   if (!/^[A-Z]{4}$/.test(roomCode)) {
     sendJson(res, 400, { error: "Invalid room code" });
