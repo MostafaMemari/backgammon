@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import { GameState, setState } from "./store/gameStateSlice";
-import { DocumentReference } from "firebase/firestore";
 import {
+  LobbyRef,
   writeAcceptDoubleToDB,
   writeAutomaticDoubleToDB,
   writeEndTurnToDB,
@@ -253,12 +253,12 @@ export class LocalGameActions extends Actions {
 export class NetworkedGameActions extends Actions {
   isHost: boolean;
   dispatchFn: Function;
-  docRef: DocumentReference;
+  docRef: LobbyRef;
 
   constructor(
     isHostClient: boolean,
     dispatchFn: Function,
-    docRef: DocumentReference
+    docRef: LobbyRef
   ) {
     super();
     this.isHost = isHostClient;

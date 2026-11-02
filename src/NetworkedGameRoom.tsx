@@ -3,14 +3,13 @@ import { FunctionComponent, useEffect, useRef, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
-  FirestoreGameData,
   findLobby,
   getCurrentUser,
   hasJoinedLobby,
   joinLobbyAsPlayerTwo,
   signIn,
+  subscribeToLobby,
 } from "./Firebase";
-import { onSnapshot } from "firebase/firestore";
 import { GameState, setState } from "./store/gameStateSlice";
 import { setPlayersState } from "./store/playersSlice";
 import {
@@ -98,6 +97,8 @@ const NetworkedGameRoom: FunctionComponent = () => {
   }
 
   useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+
     async function connectToLobby() {
       try {
         await signIn();
@@ -106,11 +107,10 @@ const NetworkedGameRoom: FunctionComponent = () => {
           setRoomConnectionError(RoomConnectionErrorType.NotFound);
           return;
         } else {
-          onSnapshot(
+          unsubscribe = subscribeToLobby(
             docRef,
-            (doc) => {
+            (data) => {
           // Dispatch all relevant updates to the redux store
-          let data = doc.data() as FirestoreGameData;
           dispatch(setState(data.gameState));
           dispatch(setPlayersState(data.players));
           dispatch(setCurrentPlayer(data.currentPlayer));
@@ -184,9 +184,7 @@ const NetworkedGameRoom: FunctionComponent = () => {
             }
           }
             },
-            (error) => {
-              handleConnectionError(error);
-            }
+            handleConnectionError
           );
         }
       } catch (error) {
@@ -194,6 +192,12 @@ const NetworkedGameRoom: FunctionComponent = () => {
       }
     }
     connectToLobby();
+
+    return () => {
+      if (unsubscribe != null) {
+        unsubscribe();
+      }
+    };
   }, [dispatch, roomCode]);
 
   if (gameActionsRef.current == null) {

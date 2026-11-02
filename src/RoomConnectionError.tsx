@@ -47,7 +47,7 @@ const RoomConnectionError: FunctionComponent<RoomConnectionErrorProps> = ({
       </div>
       <div className={"Room-connection-error-subtext"}>
         {type === RoomConnectionErrorType.ConnectionFailed
-          ? "Check your internet connection (a VPN may be required) and try again."
+          ? "Check your internet connection and try again."
           : "Please double check the code or try creating another room."}
       </div>
       {detail != null && (
