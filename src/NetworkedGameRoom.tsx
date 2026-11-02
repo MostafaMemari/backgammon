@@ -62,6 +62,17 @@ const NetworkedGameRoom: FunctionComponent = () => {
   const [roomConnectionError, setRoomConnectionError] = useState(
     RoomConnectionErrorType.None
   );
+  const [roomConnectionErrorDetail, setRoomConnectionErrorDetail] = useState<
+    string | undefined
+  >(undefined);
+
+  function handleConnectionError(error: unknown) {
+    console.error("Failed to connect to room:", error);
+    setRoomConnectionErrorDetail(
+      error instanceof Error ? error.message : String(error)
+    );
+    setRoomConnectionError(RoomConnectionErrorType.ConnectionFailed);
+  }
 
   // We wrap the _gameActions state inside a Ref and use the Ref instead.
   // That's because if we just used a normal state variable, the onSnapshot()
@@ -88,13 +99,16 @@ const NetworkedGameRoom: FunctionComponent = () => {
 
   useEffect(() => {
     async function connectToLobby() {
-      await signIn();
-      const docRef = await findLobby(roomCode);
-      if (docRef == null) {
-        setRoomConnectionError(RoomConnectionErrorType.NotFound);
-        return;
-      } else {
-        onSnapshot(docRef, (doc) => {
+      try {
+        await signIn();
+        const docRef = await findLobby(roomCode);
+        if (docRef == null) {
+          setRoomConnectionError(RoomConnectionErrorType.NotFound);
+          return;
+        } else {
+          onSnapshot(
+            docRef,
+            (doc) => {
           // Dispatch all relevant updates to the redux store
           let data = doc.data() as FirestoreGameData;
           dispatch(setState(data.gameState));
@@ -142,7 +156,7 @@ const NetworkedGameRoom: FunctionComponent = () => {
               setRoomConnectionError(RoomConnectionErrorType.TooManyPlayers);
               return;
             } else {
-              joinLobbyAsPlayerTwo(docRef);
+              joinLobbyAsPlayerTwo(docRef).catch(handleConnectionError);
             }
             isHost = false;
           }
@@ -169,7 +183,14 @@ const NetworkedGameRoom: FunctionComponent = () => {
               dispatch(setShowGameOverDialog(true));
             }
           }
-        });
+            },
+            (error) => {
+              handleConnectionError(error);
+            }
+          );
+        }
+      } catch (error) {
+        handleConnectionError(error);
       }
     }
     connectToLobby();
@@ -194,7 +215,11 @@ const NetworkedGameRoom: FunctionComponent = () => {
     let spinnerOrError = null;
     if (roomConnectionError !== RoomConnectionErrorType.None) {
       spinnerOrError = (
-        <RoomConnectionError type={roomConnectionError} roomCode={roomCode} />
+        <RoomConnectionError
+          type={roomConnectionError}
+          roomCode={roomCode}
+          detail={roomConnectionErrorDetail}
+        />
       );
     } else {
       spinnerOrError = <div className={"Networked-gameboard-spinner"} />;

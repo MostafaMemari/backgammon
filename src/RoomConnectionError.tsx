@@ -8,16 +8,19 @@ export enum RoomConnectionErrorType {
   None = "None",
   NotFound = "NotFound",
   TooManyPlayers = "TooManyPlayers",
+  ConnectionFailed = "ConnectionFailed",
 }
 
 type RoomConnectionErrorProps = {
   type: RoomConnectionErrorType;
   roomCode: string;
+  detail?: string;
 };
 
 const RoomConnectionError: FunctionComponent<RoomConnectionErrorProps> = ({
   type,
   roomCode,
+  detail,
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -27,9 +30,12 @@ const RoomConnectionError: FunctionComponent<RoomConnectionErrorProps> = ({
   if (type === RoomConnectionErrorType.NotFound) {
     headerText = "Room Not Found";
     errorText = "Could not find room with code: ";
-  } else {
+  } else if (type === RoomConnectionErrorType.TooManyPlayers) {
     headerText = "Room Full";
     errorText = "Two players have already connected to room: ";
+  } else {
+    headerText = "Connection Failed";
+    errorText = "Could not connect to room: ";
   }
 
   return (
@@ -40,8 +46,13 @@ const RoomConnectionError: FunctionComponent<RoomConnectionErrorProps> = ({
         {<span className={"Room-connection-error-roomcode"}>{roomCode}</span>}
       </div>
       <div className={"Room-connection-error-subtext"}>
-        Please double check the code or try creating another room.
+        {type === RoomConnectionErrorType.ConnectionFailed
+          ? "Check your internet connection (a VPN may be required) and try again."
+          : "Please double check the code or try creating another room."}
       </div>
+      {detail != null && (
+        <div className={"Room-connection-error-subtext"}>{detail}</div>
+      )}
       <div className={"Room-connection-error-menu-button-wrapper"}>
         <button
           className={"Room-connection-error-menu-button"}
