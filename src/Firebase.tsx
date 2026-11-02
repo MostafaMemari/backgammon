@@ -36,14 +36,24 @@ import {
 } from "./store/doublingCubeSlice";
 import { InitialMatchScoreState, MatchScore } from "./store/matchScoreSlice";
 
+// The Firebase web app configuration is read from environment variables so
+// this deployment is not tied to the original author's Firebase project.
+//
+// - Local development: copy .env.example to .env and fill in the values from
+//   Firebase console -> Project settings -> General -> Your apps -> SDK setup.
+// - Vercel: set the same variables under Project -> Settings -> Environment
+//   Variables, then redeploy.
+//
+// Note: in Create React App, only variables prefixed with REACT_APP_ are
+// embedded into the client bundle at build time.
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBEAjHStQSJVxt6gxABDueJ4JdSPEjlHXE",
-  authDomain: "backgammon-574d7.firebaseapp.com",
-  projectId: "backgammon-574d7",
-  storageBucket: "backgammon-574d7.appspot.com",
-  messagingSenderId: "455319890911",
-  appId: "1:455319890911:web:43cfebdc213fa57a44726a",
-  measurementId: "G-74HHQTBN9B",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 let initialized: boolean = false;
@@ -55,10 +65,27 @@ function initialize() {
   if (initialized) {
     return;
   }
+
+  const missingEnvVars = Object.entries(FIREBASE_CONFIG)
+    .filter(([key, value]) => key !== "measurementId" && !value)
+    .map(([key]) => `REACT_APP_FIREBASE_${camelCaseToScreamingSnake(key)}`);
+
+  if (missingEnvVars.length > 0) {
+    throw new Error(
+      "Firebase configuration is missing. Set the following environment " +
+        "variables (see .env.example), then rebuild: " +
+        missingEnvVars.join(", ")
+    );
+  }
+
   app = initializeApp(FIREBASE_CONFIG);
   auth = getAuth(app);
   db = getFirestore(app);
   initialized = true;
+}
+
+function camelCaseToScreamingSnake(name: string): string {
+  return name.replace(/([A-Z])/g, "_$1").toUpperCase();
 }
 
 export function createRoomCode(): string {
