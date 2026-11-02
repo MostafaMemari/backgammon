@@ -15,6 +15,8 @@ import {
   setPlayerOneColor,
   setShadowIntensity,
   setShowSettingsMenu,
+  setSoundEnabled,
+  setSoundVolume,
 } from "./store/settingsSlice";
 import { ActionsContext, LocalGameActions } from "./ActionsContext";
 import {
@@ -272,6 +274,39 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
 
   const effectsTab = (
     <>
+      <div className={"Settings-section-title"}>Sound</div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Sound effects</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.soundEnabled,
+          })}
+          onClick={() => dispatch(setSoundEnabled(!settings.soundEnabled))}
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.soundEnabled ? "ON" : "OFF"}
+          </div>
+        </div>
+      </div>
+      {settings.soundEnabled ? (
+        <div className={"Settings-slider-row"}>
+          <div className={"Settings-slider-label"}>Sound volume</div>
+          <input
+            className={"Settings-slider"}
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={settings.soundVolume}
+            style={{ "--fill": `${settings.soundVolume}%` } as any}
+            onChange={(e) =>
+              dispatch(setSoundVolume(Number(e.target.value)))
+            }
+          />
+          <div className={"Settings-slider-value"}>{settings.soundVolume}%</div>
+        </div>
+      ) : null}
       <div className={"Settings-section-title"}>Visual effects</div>
       <div className={"Settings-slider-row"}>
         <div className={"Settings-slider-label"}>Shadow depth</div>
@@ -315,7 +350,6 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
       </div>
     </>
   );
-
   const tabButton = (tab: SettingsTab, label: string) => (
     <div
       key={tab}

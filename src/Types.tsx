@@ -41,9 +41,16 @@ export type Move = {
   checkerOwner: Player;
 };
 
+/** Where an animatable move came from - the local player or the network. */
+export enum AnimatableMoveSource {
+  Local = "LOCAL",
+  Network = "NETWORK",
+}
+
 export type AnimatableMove = {
   animationID: number;
   move: Move;
+  source: AnimatableMoveSource;
 };
 
 export enum GameResult {

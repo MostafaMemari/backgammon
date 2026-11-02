@@ -5,6 +5,7 @@ import { ActionsContext, LocalGameActions } from "./ActionsContext";
 import GameRoom from "./GameRoom";
 import { Player } from "./Types";
 import SettingsMenuButton from "./SettingsMenuButton";
+import SoundToggleButton from "./SoundToggleButton";
 import {
   default as MatchSettingsMenu,
   MatchPointValue,
@@ -32,6 +33,7 @@ const LocalGameRoom: FunctionComponent = () => {
     contents = (
       <div>
         <SettingsMenuButton />
+        <SoundToggleButton />
         <GameRoom playerPerspective={Player.One} />
       </div>
     );

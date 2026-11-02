@@ -1,4 +1,4 @@
-import { FunctionComponent, useRef, useState } from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
 
 import { Color } from "./Types";
 import Die from "./Die";
@@ -8,6 +8,7 @@ import { useAppSelector } from "./store/hooks";
 import { areBoardStatesEquivalent } from "./store/gameBoardSlice";
 import { STARTING_BOARD_STATE } from "./Constants";
 import { CSSTransition } from "react-transition-group";
+import { playDiceRoll } from "./sound";
 
 type DiceProps = {
   currentPlayerColor: Color;
@@ -57,6 +58,18 @@ const Dice: FunctionComponent<DiceProps> = ({
   }
 
   const nodeRef = useRef(null);
+
+  // Play the dice rattle exactly when the tumble animation starts: the
+  // moment the reroll class is removed (or on first appearance mid-game when
+  // the dice mount already rolling). Covers both local rolls and the opponent's.
+  const willReroll = !hasTriggeredRollAnimation;
+  const prevForceRerollRef = useRef(willReroll);
+  useEffect(() => {
+    if (prevForceRerollRef.current && !willReroll) {
+      playDiceRoll();
+    }
+    prevForceRerollRef.current = willReroll;
+  }, [willReroll]);
 
   return (
     <CSSTransition

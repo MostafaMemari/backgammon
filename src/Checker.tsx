@@ -1,7 +1,6 @@
 import cx from "classnames";
 import React, { FunctionComponent } from "react";
-import { CSSTransition } from "react-transition-group";
-import { Animation, getTranslationOffsetStyleString } from "./Animations";
+import { Animation } from "./Animations";
 
 import { Color } from "./Types";
 
@@ -17,6 +16,8 @@ type CheckerProps = {
   color: Color;
   status: CheckerStatus;
   onAnimationComplete: (id: number) => void;
+  /** Small lean in degrees so hand-stacked checkers don't look laser-straight. */
+  tilt?: number;
 };
 
 const Checker: FunctionComponent<CheckerProps> = ({
@@ -25,49 +26,45 @@ const Checker: FunctionComponent<CheckerProps> = ({
   color,
   status,
   onAnimationComplete,
+  tilt = 0,
 }: CheckerProps) => {
   const colorClass = color === Color.White ? "white" : "black";
-  const ref = React.useRef(null);
 
-  let enteringState = { transform: "none" };
+  const style: React.CSSProperties = {};
+  if (tilt !== 0) {
+    style.rotate = `${tilt}deg`;
+  }
   if (animation != null) {
-    enteringState = {
-      transform: getTranslationOffsetStyleString(animation.translation),
-    };
+    // The arc of the move is drawn by the checker-slide keyframes from these
+    // start offsets (see App.scss).
+    (style as any)["--tx"] = `${animation.translation.translateX}vw`;
+    (style as any)["--ty"] = `${animation.translation.translateY}vw`;
   }
 
-  const transitionStyles = {
-    entering: enteringState,
-    entered: { transform: "none" },
-    exiting: {},
-    exited: {},
-    unmounted: {},
-  };
-
   return (
-    <CSSTransition in={true} appear={true} nodeRef={ref} timeout={0}>
-      {(state) => {
-        let d = (
-          <div
-            className={cx("Checker", colorClass, {
-              highlighted:
-                status === CheckerStatus.Highlighted && !checkerPulse,
-              "highlighted-pulse":
-                status === CheckerStatus.Highlighted && checkerPulse,
-              "selected-pulse": status === CheckerStatus.Selected,
-            })}
-            ref={ref}
-            style={transitionStyles[state]}
-            onTransitionEnd={() => {
-              if (animation != null) {
-                onAnimationComplete(animation.id);
-              }
-            }}
-          />
-        );
-        return d;
+    <div
+      className={cx("Checker", colorClass, {
+        moving: animation != null,
+        // Checkers that were just hit and sent to the bar get a wobble.
+        wobble: animation?.isHit === true,
+        highlighted:
+          status === CheckerStatus.Highlighted && !checkerPulse,
+        "highlighted-pulse":
+          status === CheckerStatus.Highlighted && checkerPulse,
+        "selected-pulse": status === CheckerStatus.Selected,
+      })}
+      style={style}
+      onAnimationEnd={(event) => {
+        // Only react to the slide animation finishing on this exact element.
+        if (
+          animation != null &&
+          event.target === event.currentTarget &&
+          event.animationName.indexOf("checker-slide") === 0
+        ) {
+          onAnimationComplete(animation.id);
+        }
       }}
-    </CSSTransition>
+    />
   );
 };
 

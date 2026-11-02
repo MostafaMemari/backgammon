@@ -383,6 +383,7 @@ export const DEFAULT_CHECKER_THEME = "ivory-ebony";
 export const DEFAULT_BACKGROUND_THEME = "velvet-night";
 export const DEFAULT_SHADOW_INTENSITY = 60;
 export const DEFAULT_ANIMATION_INTENSITY = 70;
+export const DEFAULT_SOUND_VOLUME = 70;
 
 export function getBoardTheme(id: string): BoardThemeDef {
   return BOARD_THEMES.find((t) => t.id === id) ?? BOARD_THEMES[0];

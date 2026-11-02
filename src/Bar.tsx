@@ -1,3 +1,4 @@
+import cx from "classnames";
 import { FunctionComponent } from "react";
 
 import Checker, { CheckerStatus } from "./Checker";
@@ -16,6 +17,9 @@ type BarProps = {
   allPossibleMoves: Move[];
   lastPointClicked: LastPointClicked;
   checkerPulse: boolean;
+  /** Gold trail markers for recent opponent moves through the bar. */
+  recentFrom: boolean;
+  recentTo: boolean;
 };
 
 const Bar: FunctionComponent<BarProps> = ({
@@ -29,6 +33,8 @@ const Bar: FunctionComponent<BarProps> = ({
   allPossibleMoves,
   lastPointClicked,
   checkerPulse,
+  recentFrom,
+  recentTo,
 }: BarProps) => {
   const isSelected = lastPointClicked.point === "BAR";
   const isHighlighted =
@@ -99,7 +105,10 @@ const Bar: FunctionComponent<BarProps> = ({
 
   return (
     <div
-      className="Game-board-bar"
+      className={cx("Game-board-bar", {
+        "recent-from": recentFrom,
+        "recent-to": recentTo,
+      })}
       onClick={() => {
         clickHandler("BAR");
       }}

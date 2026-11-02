@@ -6,6 +6,7 @@ import {
   DEFAULT_BOARD_THEME,
   DEFAULT_CHECKER_THEME,
   DEFAULT_SHADOW_INTENSITY,
+  DEFAULT_SOUND_VOLUME,
 } from "../themes";
 
 const VISUAL_PREFS_KEY = "bg-visual-prefs-v1";
@@ -18,6 +19,8 @@ type VisualPrefs = {
   animationIntensity?: number;
   playerOneColor?: Color;
   movementDirection?: MovementDirection;
+  soundEnabled?: boolean;
+  soundVolume?: number;
 };
 
 export function loadVisualPrefs(): VisualPrefs {
@@ -54,6 +57,8 @@ export const settingsSlice = createSlice({
     shadowIntensity: prefs.shadowIntensity ?? DEFAULT_SHADOW_INTENSITY,
     animationIntensity:
       prefs.animationIntensity ?? DEFAULT_ANIMATION_INTENSITY,
+    soundEnabled: prefs.soundEnabled ?? true,
+    soundVolume: prefs.soundVolume ?? DEFAULT_SOUND_VOLUME,
     showGameOverDialog: false,
     showSettingsMenu: false,
     showMatchSetupScreen: false,
@@ -93,6 +98,14 @@ export const settingsSlice = createSlice({
       state.animationIntensity = action.payload;
       return state;
     },
+    setSoundEnabled: (state, action: { type: string; payload: boolean }) => {
+      state.soundEnabled = action.payload;
+      return state;
+    },
+    setSoundVolume: (state, action: { type: string; payload: number }) => {
+      state.soundVolume = action.payload;
+      return state;
+    },
     setShowGameOverDialog: (
       state,
       action: { type: string; payload: boolean }
@@ -126,6 +139,8 @@ export const {
   setBackgroundTheme,
   setShadowIntensity,
   setAnimationIntensity,
+  setSoundEnabled,
+  setSoundVolume,
   setShowGameOverDialog,
   setShowSettingsMenu,
   setShowMatchSetupScreen,

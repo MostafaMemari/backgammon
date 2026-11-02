@@ -1,6 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import { AnimatableMove, Move, Player } from "../Types";
+import {
+  AnimatableMove,
+  AnimatableMoveSource,
+  Move,
+  Player,
+} from "../Types";
 import { genAnimationID } from "../Utils";
 
 export type NetworkedMovesPayload = {
@@ -28,6 +33,7 @@ export const animatableMovesSlice = createSlice({
         newMoves.push({
           animationID: genAnimationID(),
           move,
+          source: AnimatableMoveSource.Local,
         });
       }
       return [...state, ...newMoves];
@@ -46,6 +52,7 @@ export const animatableMovesSlice = createSlice({
           newMoves.push({
             animationID: genAnimationID(),
             move,
+            source: AnimatableMoveSource.Network,
           });
         }
         return [...state, ...newMoves];

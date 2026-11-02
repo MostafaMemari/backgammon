@@ -32,6 +32,8 @@ export type Animation = {
   checkerOwner: Player;
   checkerNumber: number;
   translation: TranslationOffset;
+  /** True when this leg of the animation carries a checker that was hit. */
+  isHit?: boolean;
 };
 
 export function createAnimationData(
@@ -75,17 +77,17 @@ export function createAnimationData(
     const otherPlayer =
       move.checkerOwner === Player.One ? Player.Two : Player.One;
 
-    result.push(
-      createAnimationDatum(
-        gameBoardState,
-        move.to,
-        "BAR",
-        animatableMove.animationID,
-        otherPlayer,
-        playerOneMovementDirection,
-        playerPerspective
-      )
+    const hitAnimation = createAnimationDatum(
+      gameBoardState,
+      move.to,
+      "BAR",
+      animatableMove.animationID,
+      otherPlayer,
+      playerOneMovementDirection,
+      playerPerspective
     );
+    hitAnimation.isHit = true;
+    result.push(hitAnimation);
   }
 
   return result;

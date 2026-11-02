@@ -24,6 +24,10 @@ export type BoardPointProps = {
   currAnimations: Animation[];
   onAnimationComplete: (id: number) => void;
   checkerPulse: boolean;
+  /** Gold "a checker just left this point" trail marker. */
+  recentFrom: boolean;
+  /** Gold "a checker just landed on this point" trail marker. */
+  recentTo: boolean;
 };
 
 const BoardPoint: FunctionComponent<BoardPointProps> = ({
@@ -39,6 +43,8 @@ const BoardPoint: FunctionComponent<BoardPointProps> = ({
   currAnimations,
   onAnimationComplete,
   checkerPulse,
+  recentFrom,
+  recentTo,
 }: BoardPointProps) => {
   if (pointState[Player.One] > 0 && pointState[Player.Two] > 0) {
     console.error("Invalid PointState on point " + pointNumber);
@@ -67,6 +73,25 @@ const BoardPoint: FunctionComponent<BoardPointProps> = ({
           to: isHighlightedToPoint,
           noMove: showNoMoveHighlight,
         })}
+      />
+    );
+  }
+
+  // Trail markers for moves the opponent just made (auto-fade via CSS).
+  const recentHighlights = [];
+  if (recentFrom) {
+    recentHighlights.push(
+      <div
+        key="recent-from"
+        className={cx("Point-wrapper-highlight", "recent-from", topOrBottomClass)}
+      />
+    );
+  }
+  if (recentTo) {
+    recentHighlights.push(
+      <div
+        key="recent-to"
+        className={cx("Point-wrapper-highlight", "recent-to", topOrBottomClass)}
       />
     );
   }
@@ -101,6 +126,9 @@ const BoardPoint: FunctionComponent<BoardPointProps> = ({
       }
     }
 
+    // Deterministic tiny lean per checker so stacks look hand-placed.
+    const tilt = (((pointNumber * 37 + i * 53) % 5) - 2) * 0.7;
+
     checkers.push(
       <Checker
         // It's important to include the color here in the key. If not, when a checker hits another checker,
@@ -114,6 +142,7 @@ const BoardPoint: FunctionComponent<BoardPointProps> = ({
         status={status}
         animation={anim}
         onAnimationComplete={onAnimationComplete}
+        tilt={tilt}
       />
     );
   }
@@ -147,6 +176,7 @@ const BoardPoint: FunctionComponent<BoardPointProps> = ({
         })}
       />
       {highlight}
+      {recentHighlights}
     </div>
   );
 };

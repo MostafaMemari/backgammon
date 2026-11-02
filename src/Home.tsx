@@ -19,6 +19,9 @@ type HomeProps = {
   checkerPulse: boolean;
   playerMovementDirection: MovementDirection;
   playerPerspective: Player;
+  /** Gold trail markers for recent opponent moves into the home tray. */
+  recentFrom: boolean;
+  recentTo: boolean;
 };
 
 const Home: FunctionComponent<HomeProps> = ({
@@ -33,6 +36,8 @@ const Home: FunctionComponent<HomeProps> = ({
   checkerPulse,
   playerMovementDirection,
   playerPerspective,
+  recentFrom,
+  recentTo,
 }: HomeProps) => {
   const [doublingCubeData] = useAppSelector((state) => [state.doublingCube]);
 
@@ -108,6 +113,8 @@ const Home: FunctionComponent<HomeProps> = ({
   return (
     <div
       className={cx("Game-board-home", {
+        "recent-from": recentFrom,
+        "recent-to": recentTo,
         cw:
           (playerPerspective === Player.One &&
             playerMovementDirection === MovementDirection.Clockwise) ||

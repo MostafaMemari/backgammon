@@ -1,10 +1,11 @@
-import { FunctionComponent, useContext, useRef, useState } from "react";
+import { FunctionComponent, useContext, useEffect, useRef, useState } from "react";
 
 import { Color, Player } from "./Types";
 import { useAppSelector } from "./store/hooks";
 import Die from "./Die";
 import { CSSTransition } from "react-transition-group";
 import { ActionsContext } from "./ActionsContext";
+import { playDiceRoll } from "./sound";
 
 const OpeningDiceRoll: FunctionComponent = () => {
   const actions = useContext(ActionsContext);
@@ -16,6 +17,11 @@ const OpeningDiceRoll: FunctionComponent = () => {
 
   const [initialRollCounter, setInitialRollCounter] = useState(0);
   const [forceReroll, setForceReroll] = useState(false);
+
+  // Rattle the dice on the opening roll and on every re-roll (doubles tie).
+  useEffect(() => {
+    playDiceRoll();
+  }, [initialRollCounter]);
 
   let currOpeningRoll = dice.initialRolls[initialRollCounter];
   const nodeRef = useRef(null);

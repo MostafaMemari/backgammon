@@ -37,7 +37,7 @@ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 // Persist the user's device-local visual preferences (themes + effect
-// sliders + personal color/direction) whenever they change.
+// sliders + sound + personal color/direction) whenever they change.
 store.subscribe(() => {
   const s = store.getState().settings;
   saveVisualPrefs({
@@ -46,6 +46,8 @@ store.subscribe(() => {
     backgroundTheme: s.backgroundTheme,
     shadowIntensity: s.shadowIntensity,
     animationIntensity: s.animationIntensity,
+    soundEnabled: s.soundEnabled,
+    soundVolume: s.soundVolume,
     playerOneColor: s.playerOneColor,
     movementDirection: s.movementDirection,
   });

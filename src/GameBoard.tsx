@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext, useEffect, useState } from "react";
+import { FunctionComponent, useContext, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 
 import { getAvailableDice } from "./store/dice";
@@ -21,7 +21,15 @@ import {
 } from "./store/moves";
 import { appendProvisionalMove } from "./store/provisionalMovesSlice";
 import { setShowGameOverDialog } from "./store/settingsSlice";
-import { Color, GameResult, Move, MovementDirection, Player } from "./Types";
+import {
+  AnimatableMoveSource,
+  Color,
+  GameResult,
+  HitStatus,
+  Move,
+  MovementDirection,
+  Player,
+} from "./Types";
 import Bar from "./Bar";
 import BoardPoint, { BoardPointLocation } from "./BoardPoint";
 import Dice from "./Dice";
@@ -39,6 +47,16 @@ import RollButton from "./RollButton";
 import OfferDoubleButton from "./OfferDoubleButton";
 import { CHECKER_ANIMATION_PULSE_TIMER_MS } from "./Constants";
 import { MatchScore } from "./store/matchScoreSlice";
+import {
+  playCheckerHit,
+  playCheckerPlace,
+  playDeny,
+  playLose,
+  playSelect,
+  playWin,
+  playYourTurn,
+} from "./sound";
+import { LocalGameActions } from "./ActionsContext";
 
 enum BoardQuadrants {
   TopLeft = "TOP_LEFT",
@@ -146,6 +164,17 @@ type GameBoardProps = {
   playerPerspective: Player;
 };
 
+/** How long the "opponent just moved here" trail stays on the board. */
+const RECENT_MOVE_HIGHLIGHT_MS = 2200;
+/** Safety net: force-complete a move if its animation event never fires. */
+const MOVE_COMPLETION_FALLBACK_MS = 1800;
+
+type RecentMoveMarker = {
+  from: number | "BAR" | "HOME";
+  to: number | "BAR" | "HOME";
+  key: number;
+};
+
 const GameBoard: FunctionComponent<GameBoardProps> = ({
   playerPerspective,
 }: GameBoardProps) => {
@@ -188,8 +217,40 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
   const [disableHighlightedMoves, setDisableHighlightedMoves] = useState(false);
   const [currAnimations, setCurrAnimations] = useState(new Array<Animation>());
 
+  // Trail of recent networked (opponent) moves: gold highlights on the source
+  // and destination points so you can follow what the other player did.
+  const [recentMoves, setRecentMoves] = useState<RecentMoveMarker[]>([]);
+  const recentMoveTimersRef = useRef<number[]>([]);
+  useEffect(() => {
+    const timers = recentMoveTimersRef.current;
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+    };
+  }, []);
+
   const currAnimatableMove =
     animatableMoves.length > 0 ? animatableMoves[0] : null;
+  const currAnimatableMoveID = currAnimatableMove?.animationID;
+
+  // When a networked move starts animating, mark its from/to points.
+  useEffect(() => {
+    if (
+      currAnimatableMove != null &&
+      currAnimatableMove.source === AnimatableMoveSource.Network
+    ) {
+      const marker: RecentMoveMarker = {
+        from: currAnimatableMove.move.from,
+        to: currAnimatableMove.move.to,
+        key: currAnimatableMove.animationID,
+      };
+      setRecentMoves((prev) => [...prev.slice(-2), marker]);
+      const timer = window.setTimeout(() => {
+        setRecentMoves((prev) => prev.filter((m) => m.key !== marker.key));
+      }, RECENT_MOVE_HIGHLIGHT_MS);
+      recentMoveTimersRef.current.push(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currAnimatableMoveID]);
 
   // If we have a current animating move, apply it on top of the base board state.
   const gameBoardState =
@@ -209,6 +270,15 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
 
     if (currAnimatableMove == null) {
       console.error("Current animatable move is unexpectedly null.");
+    }
+
+    // Play the landing sound. A hit gets its own sharper crack + rattle.
+    if (currAnimatableMove != null) {
+      if (currAnimatableMove.move.hitStatus === HitStatus.IsHit) {
+        playCheckerHit();
+      } else {
+        playCheckerPlace();
+      }
     }
 
     // Now that the animation for the move is finished, actually update the base game
@@ -277,6 +347,32 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
     );
   }
 
+  // Safety net: if the animation end event never fires (background tab,
+  // interrupted animation), still complete the move after a grace period so
+  // the board never freezes or "teleports" checkers.
+  const onAnimationCompleteRef = useRef(onAnimationComplete);
+  onAnimationCompleteRef.current = onAnimationComplete;
+  useEffect(() => {
+    if (currAnimatableMoveID == null) {
+      return;
+    }
+    const fallback = window.setTimeout(() => {
+      onAnimationCompleteRef.current(currAnimatableMoveID);
+    }, MOVE_COMPLETION_FALLBACK_MS);
+    return () => window.clearTimeout(fallback);
+  }, [currAnimatableMoveID]);
+
+  // Shake the board while a checker is being hit and sent to the bar.
+  const isHitAnimating =
+    currAnimatableMove != null &&
+    currAnimatableMove.move.hitStatus === HitStatus.IsHit;
+  const shakeClass =
+    isHitAnimating && currAnimatableMove != null
+      ? currAnimatableMove.animationID % 2 === 0
+        ? "shake-a"
+        : "shake-b"
+      : "";
+
   const availableDice = getAvailableDice(
     diceData.currentRoll,
     provisionalMoves
@@ -304,6 +400,45 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
     }, CHECKER_ANIMATION_PULSE_TIMER_MS);
     return () => clearInterval(interval);
   }, [checkerPulse]);
+
+  // Chime when it becomes this client's turn to act.
+  const prevTurnKeyRef = useRef("");
+  useEffect(() => {
+    const key = `${gameState}-${currentPlayer}`;
+    let isMine = false;
+    if (gameState === GameState.PlayerMoving) {
+      try {
+        isMine = isCurrentPlayer(players, currentPlayer, actions);
+      } catch {
+        isMine = false;
+      }
+    }
+    if (isMine && prevTurnKeyRef.current !== "" && prevTurnKeyRef.current !== key) {
+      playYourTurn();
+    }
+    prevTurnKeyRef.current = key;
+  }, [gameState, currentPlayer, players, actions]);
+
+  // Win / lose jingle when a game ends.
+  const prevGameStateRef = useRef(gameState);
+  useEffect(() => {
+    if (
+      isGameOverState(gameState) &&
+      !isGameOverState(prevGameStateRef.current)
+    ) {
+      let won = true;
+      if (!(actions instanceof LocalGameActions)) {
+        const myPlayer = actions.isHostClient() ? Player.One : Player.Two;
+        won = currentPlayer === myPlayer;
+      }
+      if (won) {
+        playWin();
+      } else {
+        playLose();
+      }
+    }
+    prevGameStateRef.current = gameState;
+  }, [gameState, currentPlayer, actions]);
 
   // Check if game is over and both players are ready for next game
   useEffect(() => {
@@ -395,6 +530,9 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         (move) => move.from === pointClicked
       );
       if (hasMovesFromPoint) {
+        if (lastPointClicked.point !== pointClicked) {
+          playSelect();
+        }
         dispatch(setLastPointClicked({ point: pointClicked }));
       } else {
         dispatch(clearLastPointClicked());
@@ -402,6 +540,7 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         if (pointClicked === lastPointClicked.point) {
           return true;
         }
+        playDeny();
       }
       return hasMovesFromPoint;
     }
@@ -455,6 +594,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         currAnimations={currAnimations}
         onAnimationComplete={onAnimationComplete}
         checkerPulse={checkerPulse}
+        recentFrom={recentMoves.some((m) => m.from === i)}
+        recentTo={recentMoves.some((m) => m.to === i)}
       />
     );
   }
@@ -482,6 +623,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         currAnimations={currAnimations}
         onAnimationComplete={onAnimationComplete}
         checkerPulse={checkerPulse}
+        recentFrom={recentMoves.some((m) => m.from === i)}
+        recentTo={recentMoves.some((m) => m.to === i)}
       />
     );
   }
@@ -509,6 +652,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         currAnimations={currAnimations}
         onAnimationComplete={onAnimationComplete}
         checkerPulse={checkerPulse}
+        recentFrom={recentMoves.some((m) => m.from === i)}
+        recentTo={recentMoves.some((m) => m.to === i)}
       />
     );
   }
@@ -536,6 +681,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         currAnimations={currAnimations}
         onAnimationComplete={onAnimationComplete}
         checkerPulse={checkerPulse}
+        recentFrom={recentMoves.some((m) => m.from === i)}
+        recentTo={recentMoves.some((m) => m.to === i)}
       />
     );
   }
@@ -555,6 +702,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
       checkerPulse={checkerPulse}
       playerMovementDirection={playerMovementDirection}
       playerPerspective={playerPerspective}
+      recentFrom={recentMoves.some((m) => m.from === "HOME")}
+      recentTo={recentMoves.some((m) => m.to === "HOME")}
     />
   );
 
@@ -612,7 +761,14 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
   }
 
   return (
-    <div className="Game-board-wrapper">
+    <div
+      className={cx("Game-board-wrapper", shakeClass, {
+        // Networked moves animate a little slower so the eye can follow them.
+        "net-move":
+          currAnimatableMove != null &&
+          currAnimatableMove.source === AnimatableMoveSource.Network,
+      })}
+    >
       {(playerPerspective === Player.One &&
         playerMovementDirection === MovementDirection.Clockwise) ||
       (playerPerspective === Player.Two &&
@@ -643,6 +799,8 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
         onAnimationComplete={onAnimationComplete}
         allPossibleMoves={allPossibleInitialMoves}
         lastPointClicked={lastPointClicked}
+        recentFrom={recentMoves.some((m) => m.from === "BAR")}
+        recentTo={recentMoves.some((m) => m.to === "BAR")}
       />
       <div
         className={cx("Game-board-half right", {

@@ -25,6 +25,7 @@ import {
 } from "./store/animatableMovesSlice";
 import { getClientPlayer, isGameOverState } from "./Utils";
 import GameRoom from "./GameRoom";
+import SoundToggleButton from "./SoundToggleButton";
 import { setDoublingCubeData } from "./store/doublingCubeSlice";
 import { setMatchScore } from "./store/matchScoreSlice";
 import { setGameBoardState } from "./store/gameBoardSlice";
@@ -246,6 +247,7 @@ const NetworkedGameRoom: FunctionComponent = () => {
       contents = (
         <div>
           <SettingsMenuButton />
+          <SoundToggleButton />
           <GameRoom
             playerPerspective={
               gameActionsRef.current.isHostClient() ? Player.One : Player.Two
