@@ -2752,6 +2752,564 @@ $floating-circle-count: 50;
   }
 }
 
+/**********************************************************************
+ * IN-GAME CHAT (online rooms only)                                     *
+ *                                                                      *
+ * Floating button in the top-right icon cluster; panel opens beneath   *
+ * it with the message history, ready-made phrases and stickers.        *
+ * All sizes are px/vh/vw-based so the panel never overlaps game text   *
+ * at any viewport (1287 laptop, 1024 tablet, 375 phone).               *
+ **********************************************************************/
+
+.Chat-button-wrapper {
+  position: absolute;
+  right: calc(2% + 6.8vw);
+  top: 2%;
+  z-index: 10;
+}
+
+.Chat-button {
+  color: #E3D5B8;
+  cursor: pointer;
+  filter: drop-shadow(0 0.3vh 0.3vh rgba(0, 0, 0, 0.5));
+  height: 3vw;
+  opacity: 0.92;
+  position: relative;
+  transition: 0.2s;
+  width: 3vw;
+}
+
+.Chat-button:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.Chat-button svg {
+  height: 100%;
+  width: 100%;
+}
+
+.Chat-unread-badge {
+  align-items: center;
+  background: linear-gradient(to bottom, #C2453B, #8E2B24);
+  border: 1px solid rgba(255, 226, 200, 0.75);
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  color: #FFF2E8;
+  display: flex;
+  font-size: 0.95vw;
+  font-weight: bold;
+  height: 1.7vw;
+  justify-content: center;
+  line-height: 1;
+  min-width: 1.7vw;
+  padding: 0 0.25vw;
+  position: absolute;
+  right: -20%;
+  top: -20%;
+}
+
+.Chat-backdrop {
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 25;
+}
+
+.Chat-panel {
+  animation: chat-panel-in 0.16s ease-out both;
+  background: linear-gradient(165deg, #362D24, #1B1510);
+  border: 1px solid rgba(240, 208, 146, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.65),
+    inset 0 0.1vh 0 rgba(255, 233, 192, 0.14);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Barlow', sans-serif;
+  max-height: min(430px, 64vh);
+  overflow: hidden;
+  // Fixed, not absolute: the panel is an overlay and must pin to the real
+  // viewport even when an oversized ancestor stretches the page (e.g. the
+  // board's portrait min-width on phones).
+  position: fixed;
+  right: 2%;
+  top: calc(2% + 3.4vw + 10px);
+  width: min(330px, 92vw);
+  z-index: 30;
+}
+
+@keyframes chat-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.Chat-panel-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(240, 208, 146, 0.28);
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+
+.Chat-panel-title {
+  color: #FFE9C0;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+.Chat-panel-hint {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(240, 208, 146, 0.25);
+  border-radius: 999px;
+  color: #CBB98F;
+  flex: 1;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  padding: 1px 10px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Chat-panel-close {
+  color: #CBB98F;
+  cursor: pointer;
+  flex: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Chat-panel-close:hover {
+  color: #FFE9C0;
+}
+
+.Chat-messages {
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 4px;
+  scrollbar-color: rgba(240, 208, 146, 0.4) rgba(0, 0, 0, 0.2);
+  scrollbar-width: thin;
+}
+
+.Chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(240, 208, 146, 0.32);
+  border-radius: 4px;
+}
+
+.Chat-empty {
+  align-items: center;
+  color: #A89878;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 6px;
+  height: 100%;
+  justify-content: center;
+  padding: 18px 0;
+  text-align: center;
+}
+
+.Chat-empty-sticker {
+  font-size: 34px;
+}
+
+.Chat-msg-row {
+  display: flex;
+  margin-bottom: 7px;
+}
+
+.Chat-msg-row.mine {
+  justify-content: flex-end;
+}
+
+.Chat-msg-row.theirs {
+  justify-content: flex-start;
+}
+
+.Chat-msg {
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  max-width: 78%;
+  padding: 6px 11px;
+  word-break: break-word;
+}
+
+.Chat-msg.mine {
+  background: linear-gradient(to bottom, #6E4E22, #4A3113);
+  border: 1px solid rgba(255, 223, 143, 0.5);
+  color: #FFEFCF;
+}
+
+.Chat-msg.theirs {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(240, 208, 146, 0.25);
+  color: #E9DCC0;
+}
+
+.Chat-msg.quick {
+  font-weight: bold;
+}
+
+.Chat-msg.pending {
+  opacity: 0.6;
+}
+
+.Chat-msg.failed {
+  border-color: rgba(224, 106, 96, 0.85);
+  cursor: pointer;
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+
+.Chat-msg-sticker {
+  display: block;
+  font-size: 40px;
+  line-height: 1.15;
+  padding: 1px 2px;
+}
+
+.Chat-modes {
+  border-top: 1px solid rgba(240, 208, 146, 0.18);
+  display: flex;
+  flex: none;
+  gap: 6px;
+  padding: 7px 10px;
+}
+
+.Chat-mode-btn {
+  align-items: center;
+  background: rgba(255, 233, 192, 0.06);
+  border: 1px solid rgba(240, 208, 146, 0.28);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font-size: 15px;
+  justify-content: center;
+  padding: 5px 0;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Chat-mode-btn:hover {
+  background: rgba(255, 233, 192, 0.14);
+}
+
+.Chat-mode-btn.active {
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
+  border-color: rgba(255, 223, 143, 0.65);
+}
+
+.Chat-input-row {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+
+.Chat-input {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(240, 208, 146, 0.3);
+  border-radius: 999px;
+  color: #F0E4C9;
+  flex: 1;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13.5px;
+  min-width: 0;
+  outline: none;
+  padding: 8px 14px;
+  transition: border-color 0.15s;
+}
+
+.Chat-input:focus {
+  border-color: rgba(255, 223, 143, 0.75);
+}
+
+.Chat-input::placeholder {
+  color: #8F8065;
+}
+
+.Chat-send-btn {
+  align-items: center;
+  background: linear-gradient(to bottom, #8A5E28, #4F3312);
+  border: 1px solid rgba(201, 162, 90, 0.85);
+  border-radius: 999px;
+  color: #FFE9C0;
+  cursor: pointer;
+  display: flex;
+  flex: none;
+  font-size: 14px;
+  height: 35px;
+  justify-content: center;
+  transition: 0.15s;
+  user-select: none;
+  width: 40px;
+}
+
+.Chat-send-btn:hover {
+  filter: brightness(1.15);
+}
+
+.Chat-send-btn.disabled {
+  cursor: default;
+  filter: grayscale(0.6) brightness(0.7);
+}
+
+.Chat-ready-area {
+  border-top: 1px solid rgba(240, 208, 146, 0.12);
+  flex: none;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 8px 10px 10px;
+  scrollbar-width: thin;
+}
+
+.Chat-ready-label {
+  color: #A89878;
+  font-size: 10.5px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  margin: 4px 0 6px;
+  text-transform: uppercase;
+}
+
+.Chat-phrases-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.Chat-phrase-chip {
+  background: rgba(255, 233, 192, 0.07);
+  border: 1px solid rgba(240, 208, 146, 0.32);
+  border-radius: 999px;
+  color: #E9DCC0;
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 5px 11px;
+  transition: 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.Chat-phrase-chip:hover {
+  background: rgba(255, 223, 143, 0.16);
+  border-color: rgba(255, 223, 143, 0.65);
+  color: #FFEFCF;
+}
+
+.Chat-stickers-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.Chat-sticker-chip {
+  align-items: center;
+  aspect-ratio: 1;
+  background: rgba(255, 233, 192, 0.06);
+  border: 1px solid rgba(240, 208, 146, 0.22);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  font-size: 22px;
+  justify-content: center;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Chat-sticker-chip:hover {
+  background: rgba(255, 223, 143, 0.15);
+  border-color: rgba(255, 223, 143, 0.6);
+  transform: scale(1.08);
+}
+
+.Chat-error {
+  border-top: 1px solid rgba(224, 106, 96, 0.4);
+  color: #E08A80;
+  flex: none;
+  font-size: 11.5px;
+  padding: 7px 12px 9px;
+}
+
+// Flash bubble over the board when a message arrives with the panel closed.
+.Chat-bubble {
+  animation: chat-bubble-life 3.9s ease both;
+  left: 50%;
+  pointer-events: none;
+  // Fixed so it centers on the true viewport, like the panel.
+  position: fixed;
+  top: 11%;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.Chat-bubble-inner {
+  align-items: center;
+  background: linear-gradient(165deg, rgba(54, 45, 36, 0.96), rgba(27, 21, 16, 0.96));
+  border: 1px solid rgba(240, 208, 146, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 1vh 2.5vh rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  max-width: 60vw;
+  padding: 8px 18px;
+  text-align: center;
+}
+
+.Chat-bubble-inner.sticker {
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.Chat-bubble-inner.quick {
+  border-color: rgba(255, 223, 143, 0.75);
+}
+
+.Chat-bubble-text {
+  color: #FFEFCF;
+  font-family: 'Barlow', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.Chat-bubble-sticker {
+  font-size: 44px;
+  line-height: 1.2;
+}
+
+@keyframes chat-bubble-life {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.7);
+  }
+  6% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.06);
+  }
+  10% {
+    transform: translateX(-50%) scale(1);
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+// With all animation off the bubble just appears and disappears.
+.fx-off .Chat-bubble {
+  animation: none;
+}
+
+.fx-off .Chat-panel {
+  animation: none;
+}
+
+// Portrait phones: icon cluster switches to vh units, the chat button
+// follows and the panel becomes a comfortable bottom-anchored sheet.
+@media screen and (orientation: portrait) {
+  .Chat-button-wrapper {
+    right: calc(2% + 7.6vh);
+  }
+
+  .Chat-button {
+    height: 3.4vh;
+    width: 3.4vh;
+  }
+
+  .Chat-unread-badge {
+    font-size: 1.3vh;
+    height: 2vh;
+    min-width: 2vh;
+    padding: 0 0.5vh;
+  }
+
+  .Chat-panel {
+    max-height: 72vh;
+    max-width: 340px;
+    right: 8px;
+    top: calc(2% + 7vh + 8px);
+    // Sass mangles min(…, calc(…)); write the viewport cap directly.
+    width: calc(100vw - 16px);
+  }
+
+  .Chat-bubble {
+    top: 9%;
+  }
+
+  .Chat-bubble-text {
+    font-size: 2vh;
+  }
+
+  .Chat-bubble-sticker {
+    font-size: 5vh;
+  }
+
+  .Chat-stickers-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+// Very small screens: keep every control reachable, no overlaps.
+@media (max-width: 400px) {
+  .Chat-panel {
+    max-width: none;
+    right: 6px;
+    width: calc(100vw - 12px);
+  }
+
+  .Chat-msg {
+    max-width: 86%;
+  }
+
+  .Chat-stickers-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+// Short landscape windows (laptops with small heights): cap the panel so it
+// can never cover the board's action area.
+@media (max-height: 520px) {
+  .Chat-panel {
+    max-height: 74vh;
+  }
+
+  .Chat-messages {
+    min-height: 90px;
+  }
+
+  .Chat-ready-area {
+    max-height: 26vh;
+  }
+}
+
 // When animation intensity is 0%, stop every looping animation entirely.
 .fx-off .Point-wrapper-highlight.to {
   animation: none;

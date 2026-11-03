@@ -13,6 +13,7 @@ import doublingCubeReducer from "./doublingCubeSlice";
 import matchScoreReducer from "./matchScoreSlice";
 import wipeTransitionReducer from "./wipeTransitionSlice";
 import readyForNextGameReducer from "./readyForNextGameSlice";
+import chatReducer from "./chatSlice";
 import { saveVisualPrefs } from "./settingsSlice";
 
 export const store = configureStore({
@@ -30,6 +31,7 @@ export const store = configureStore({
     matchScore: matchScoreReducer,
     wipeTransition: wipeTransitionReducer,
     readyForNextGame: readyForNextGameReducer,
+    chat: chatReducer,
   },
 });
 

@@ -40,6 +40,13 @@ import { setReadyForNextGameData } from "./store/readyForNextGameSlice";
 import RoomConnectionError, {
   RoomConnectionErrorType,
 } from "./RoomConnectionError";
+import ChatPanel from "./ChatPanel";
+import { ChatPlayerSide, parseRoomChat } from "./chat";
+import {
+  chatDisconnected,
+  chatIncoming,
+  chatSeed,
+} from "./store/chatSlice";
 
 type LoaderData = {
   roomCode: string;
@@ -96,6 +103,10 @@ const NetworkedGameRoom: FunctionComponent = () => {
     previousGameStateRef.current = gameState;
     _setPreviousGameState(gameState);
   }
+
+  // Marks whether the chat slice has already been seeded for this room so
+  // that only the first poll loads history silently.
+  const chatConnectedRef = useRef(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
@@ -184,6 +195,32 @@ const NetworkedGameRoom: FunctionComponent = () => {
               dispatch(setShowGameOverDialog(true));
             }
           }
+
+          // Feed the in-game chat panel from the room document. The very
+          // first delivery is a silent seed (history loads without unread
+          // badges); afterwards only genuinely new messages count.
+          const chatMySide: ChatPlayerSide = isHost ? "one" : "two";
+          const chatMessages = parseRoomChat(
+            (data as Record<string, unknown>).chat
+          );
+          if (chatConnectedRef.current) {
+            dispatch(
+              chatIncoming({
+                messages: chatMessages,
+                roomCode: roomCode,
+                mySide: chatMySide,
+              })
+            );
+          } else {
+            chatConnectedRef.current = true;
+            dispatch(
+              chatSeed({
+                messages: chatMessages,
+                mySide: chatMySide,
+                roomCode: roomCode,
+              })
+            );
+          }
             },
             handleConnectionError
           );
@@ -198,6 +235,9 @@ const NetworkedGameRoom: FunctionComponent = () => {
       if (unsubscribe != null) {
         unsubscribe();
       }
+      // Reset chat state (panel, unread badge, bubble) when leaving the room.
+      chatConnectedRef.current = false;
+      dispatch(chatDisconnected());
     };
   }, [dispatch, roomCode]);
 
@@ -248,6 +288,7 @@ const NetworkedGameRoom: FunctionComponent = () => {
         <div>
           <SettingsMenuButton />
           <SoundToggleButton />
+          <ChatPanel roomCode={roomCode} />
           <GameRoom
             playerPerspective={
               gameActionsRef.current.isHostClient() ? Player.One : Player.Two

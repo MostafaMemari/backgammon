@@ -261,6 +261,15 @@ export function playWin(): void {
   });
 }
 
+/** Soft two-note blip: a chat message arrived from the opponent. */
+export function playChatReceive(): void {
+  play((context, out, t0) => {
+    const vol = soundVolume();
+    tone(context, out, t0, 740, 0.12, 0.12 * vol);
+    tone(context, out, t0 + 0.09, 988, 0.2, 0.12 * vol);
+  });
+}
+
 /** Sober descending pair when the local player loses. */
 export function playLose(): void {
   play((context, out, t0) => {
