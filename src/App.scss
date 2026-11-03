@@ -2078,35 +2078,59 @@ $floating-circle-count: 50;
  * theme swatches, sliders)
  ***************************/
 .Settings-menu .modal-content {
-  width: min(92vw, 560px);
+  width: min(94vw, 640px);
 }
 
 .Settings-menu .modal-body {
-  padding: 3% 4%;
+  padding: 3% 4% 2%;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
+.Settings-menu .modal-header .close,
+.Game-over-dialog .modal-header .close {
+  color: #CBB98F;
+  font-size: 1.7em;
+  font-weight: normal;
+  opacity: 0.85;
+  text-shadow: none;
+  transition: 0.15s;
+}
+
+.Settings-menu .modal-header .close:hover,
+.Game-over-dialog .modal-header .close:hover {
+  color: #FFE9C0;
+  opacity: 1;
+}
+
+// Tab bar: a contained segmented control (like in-game option menus).
 .Settings-tabs {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(240, 208, 146, 0.18);
+  border-radius: 1.8vh;
   display: flex;
-  gap: 2%;
-  margin-bottom: 4%;
+  gap: 0.6%;
+  margin-bottom: 4.5%;
+  padding: 0.55vh;
   width: 100%;
 }
 
 .Settings-tab {
-  background: rgba(255, 233, 192, 0.06);
-  border: 1px solid rgba(240, 208, 146, 0.22);
-  border-radius: 0.6vw;
+  background: transparent;
+  border: none;
+  border-radius: 1.4vh;
   color: #CBB98F;
   cursor: pointer;
   flex: 1;
   font-family: 'Barlow', sans-serif;
-  font-size: max(0.75em, 0.8vw);
+  font-size: max(0.72em, 0.76vw);
   font-weight: bold;
   letter-spacing: 0.03em;
-  padding: 1.2vh 0;
+  padding: 1.1vh 0;
   text-align: center;
   transition: 0.15s;
   user-select: none;
+  white-space: nowrap;
 }
 
 .Settings-tab:hover {
@@ -2116,19 +2140,34 @@ $floating-circle-count: 50;
 
 .Settings-tab.active {
   background: linear-gradient(to bottom, #8A5E28, #4F3312);
-  border-color: #C9A25A;
-  box-shadow: 0 0 0.8vh rgba(255, 223, 143, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 233, 192, 0.28),
+    0 0 0.8vh rgba(255, 223, 143, 0.22);
   color: #FFE9C0;
 }
 
 .Settings-section-title {
+  align-items: center;
   color: #FFE9C0;
+  display: flex;
   font-size: max(0.8em, 0.85vw);
   font-weight: bold;
+  gap: 2.5%;
   letter-spacing: 0.06em;
-  margin: 2% 0 2.5%;
-  opacity: 0.9;
+  margin: 2.5% 0 3%;
+  opacity: 0.95;
   text-transform: uppercase;
+}
+
+// Gold hairline after the title text (section divider).
+.Settings-section-title::after {
+  content: "";
+  background: linear-gradient(
+    to right,
+    rgba(240, 208, 146, 0.35),
+    rgba(240, 208, 146, 0)
+  );
+  flex: 1;
+  height: 1px;
 }
 
 .Settings-theme-grid {
@@ -2298,6 +2337,174 @@ $floating-circle-count: 50;
   font-size: max(0.62em, 0.64vw);
   line-height: 1.4;
   margin-top: 1%;
+}
+
+/*************************************************
+ * SETTINGS: GRAPHICS QUALITY PRESETS (game-style) *
+ *************************************************/
+
+// "Auto-detect" pill on the Graphics quality title row.
+.Settings-menu .Settings-auto-btn {
+  background: rgba(255, 233, 192, 0.08);
+  border: 1px solid rgba(240, 208, 146, 0.35);
+  border-radius: 2vh;
+  color: #CBB98F;
+  cursor: pointer;
+  flex: none;
+  font-size: max(0.6em, 0.62vw);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  padding: 0.55vh 1.1vw;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Settings-menu .Settings-auto-btn:hover {
+  background: rgba(255, 233, 192, 0.16);
+  border-color: rgba(240, 208, 146, 0.65);
+  color: #F0E2BC;
+}
+
+.Settings-quality-grid {
+  display: flex;
+  gap: 2.5%;
+  margin-bottom: 2.5%;
+  width: 100%;
+}
+
+.Settings-quality-card {
+  background: rgba(0, 0, 0, 0.28);
+  border: 2px solid rgba(240, 208, 146, 0.25);
+  border-radius: 0.8vw;
+  cursor: pointer;
+  flex: 1;
+  padding: 1.5vh 3% 1.3vh;
+  position: relative;
+  text-align: center;
+  transition: 0.15s;
+  user-select: none;
+}
+
+.Settings-quality-card:hover {
+  border-color: rgba(240, 208, 146, 0.65);
+  transform: translateY(-2px);
+}
+
+.Settings-quality-card.selected {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 223, 143, 0.14),
+    rgba(0, 0, 0, 0.3)
+  );
+  border-color: #FFDF8F;
+  box-shadow: 0 0 1vh rgba(255, 223, 143, 0.4);
+}
+
+.Settings-quality-name {
+  color: #FFE9C0;
+  font-size: max(0.95em, 1vw);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.Settings-quality-tagline {
+  color: #C9A25A;
+  font-size: max(0.6em, 0.62vw);
+  font-weight: bold;
+  letter-spacing: 0.09em;
+  margin-top: 0.4vh;
+  text-transform: uppercase;
+}
+
+.Settings-quality-desc {
+  color: #A89878;
+  font-size: max(0.58em, 0.6vw);
+  line-height: 1.35;
+  margin-top: 0.7vh;
+}
+
+.Settings-quality-card.selected .Settings-quality-desc {
+  color: #C4B694;
+}
+
+// Gold check badge on the selected preset card.
+.Settings-quality-check {
+  align-items: center;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #FFF3C4,
+    #D9B45C 60%,
+    #8A6435
+  );
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  color: #3A2810;
+  display: flex;
+  font-size: max(0.65em, 0.68vw);
+  font-weight: bold;
+  height: 2.5vh;
+  justify-content: center;
+  min-height: 19px;
+  min-width: 19px;
+  position: absolute;
+  right: -0.9vh;
+  top: -0.9vh;
+  width: 2.5vh;
+}
+
+.Settings-custom-note {
+  color: #C9A25A;
+  font-size: max(0.62em, 0.64vw);
+  font-style: italic;
+  margin: -0.5% 0 2.5%;
+}
+
+// Phones: five tabs need tighter type and the three quality cards are
+// easier to read stacked than squeezed side by side.
+@media screen and (orientation: portrait) {
+  .Settings-menu .modal-content {
+    width: 96vw;
+  }
+
+  .Settings-tab {
+    font-size: max(0.6em, 2.2vw);
+    letter-spacing: 0;
+    padding: 1vh 0;
+  }
+
+  .Settings-quality-grid {
+    flex-direction: column;
+    gap: 1.6%;
+  }
+
+  .Settings-quality-card {
+    padding: 1.2vh 3% 1.1vh;
+  }
+
+  .Settings-quality-name {
+    font-size: max(0.9em, 3.4vw);
+  }
+
+  .Settings-quality-tagline {
+    font-size: max(0.58em, 2.3vw);
+  }
+
+  .Settings-quality-desc {
+    font-size: max(0.6em, 2.4vw);
+  }
+
+  .Settings-menu .Settings-auto-btn {
+    font-size: max(0.6em, 2.2vw);
+    padding: 0.5vh 2.4vw;
+  }
+
+  .Settings-custom-note {
+    font-size: max(0.6em, 2.3vw);
+  }
+
+  .Settings-menu .Settings-perf-toggle {
+    width: 30vw;
+  }
 }
 
 // When animation intensity is 0%, stop every looping animation entirely.

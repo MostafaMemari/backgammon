@@ -8,6 +8,7 @@ import { Color, MovementDirection, Player } from "./Types";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
   setAnimationIntensity,
+  applyGraphicsPreset,
   setOptAmbient,
   setOptGlow,
   setOptGrain,
@@ -16,7 +17,6 @@ import {
   setBoardTheme,
   setCheckerTheme,
   setMovementDirection,
-  setPerformanceMode,
   setPlayerOneColor,
   setShadowIntensity,
   setShowSettingsMenu,
@@ -28,9 +28,9 @@ import {
   BACKGROUND_THEMES,
   BOARD_THEMES,
   CHECKER_THEMES,
+  GRAPHICS_PRESETS,
   getCheckerTheme,
-  PerformanceMode,
-  PERFORMANCE_MODES,
+  detectPerformanceMode,
 } from "./themes";
 
 type SettingsMenuProps = {
@@ -42,6 +42,7 @@ enum SettingsTab {
   Board = "BOARD",
   Background = "BACKGROUND",
   Effects = "EFFECTS",
+  Sound = "SOUND",
 }
 
 const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
@@ -281,58 +282,39 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
 
   const effectsTab = (
     <>
-      <div className={"Settings-section-title"}>Sound</div>
-      <div className={"Settings-slider-row"}>
-        <div className={"Settings-slider-label"}>Sound effects</div>
+      <div className={"Settings-section-title with-action"}>
+        <span>Graphics quality</span>
         <div
-          className={cx("Settings-sound-toggle", {
-            on: settings.soundEnabled,
-          })}
-          onClick={() => dispatch(setSoundEnabled(!settings.soundEnabled))}
+          className={"Settings-auto-btn"}
+          title={"Pick the best quality for this device automatically"}
+          onClick={() => dispatch(applyGraphicsPreset(detectPerformanceMode()))}
         >
-          <div className={"Settings-sound-toggle-knob"} />
-          <div className={"Settings-sound-toggle-text"}>
-            {settings.soundEnabled ? "ON" : "OFF"}
-          </div>
+          Auto-detect
         </div>
       </div>
-      {settings.soundEnabled ? (
-        <div className={"Settings-slider-row"}>
-          <div className={"Settings-slider-label"}>Sound volume</div>
-          <input
-            className={"Settings-slider"}
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={settings.soundVolume}
-            style={{ "--fill": `${settings.soundVolume}%` } as any}
-            onChange={(e) =>
-              dispatch(setSoundVolume(Number(e.target.value)))
-            }
-          />
-          <div className={"Settings-slider-value"}>{settings.soundVolume}%</div>
+      <div className={"Settings-quality-grid"}>
+        {GRAPHICS_PRESETS.map((p) => (
+          <div
+            key={p.id}
+            className={cx("Settings-quality-card", {
+              selected: settings.graphicsQuality === p.id,
+            })}
+            onClick={() => dispatch(applyGraphicsPreset(p.id))}
+          >
+            {settings.graphicsQuality === p.id ? (
+              <div className={"Settings-quality-check"}>✓</div>
+            ) : null}
+            <div className={"Settings-quality-name"}>{p.name}</div>
+            <div className={"Settings-quality-tagline"}>{p.tagline}</div>
+            <div className={"Settings-quality-desc"}>{p.description}</div>
+          </div>
+        ))}
+      </div>
+      {settings.graphicsQuality === "custom" ? (
+        <div className={"Settings-custom-note"}>
+          Custom — you fine-tuned a preset. Pick a card above to reset.
         </div>
       ) : null}
-      <div className={"Settings-section-title"}>Graphics quality</div>
-      <div className={"Settings-slider-row"}>
-        <div className={"Settings-slider-label"}>Preset</div>
-        <div className={"Settings-perf-toggle"}>
-          {PERFORMANCE_MODES.map((m) => (
-            <div
-              key={m.id}
-              className={cx("Settings-perf-option", {
-                selected: settings.performanceMode === m.id,
-              })}
-              onClick={() =>
-                dispatch(setPerformanceMode(m.id as PerformanceMode))
-              }
-            >
-              {m.name}
-            </div>
-          ))}
-        </div>
-      </div>
       <div className={"Settings-section-title"}>Advanced graphics</div>
       <div className={"Settings-slider-row"}>
         <div className={"Settings-slider-label"}>Shadows</div>
@@ -431,12 +413,50 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
         </div>
       </div>
       <div className={"Settings-hint"}>
-        Graphics presets like in PC games: Light for weak laptops and
-        browsers, Balanced for a fast but still rich look, Full for strong
-        PCs. The advanced switches let you fine-tune each effect - for
-        example keep shadows but turn off ambient motion. Everything applies
-        instantly and is saved on this device.
+        Quality presets work like the graphics menu in PC games: pick Low on
+        a weak laptop for the simplest possible look, Medium for a fast but
+        still rich scene, High for everything. The advanced switches and
+        sliders fine-tune any preset — for example keep shadows but turn
+        off ambient motion. Everything applies instantly and is saved on
+        this device.
       </div>
+    </>
+  );
+  const soundTab = (
+    <>
+      <div className={"Settings-section-title"}>Sound</div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Sound effects</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.soundEnabled,
+          })}
+          onClick={() => dispatch(setSoundEnabled(!settings.soundEnabled))}
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.soundEnabled ? "ON" : "OFF"}
+          </div>
+        </div>
+      </div>
+      {settings.soundEnabled ? (
+        <div className={"Settings-slider-row"}>
+          <div className={"Settings-slider-label"}>Sound volume</div>
+          <input
+            className={"Settings-slider"}
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={settings.soundVolume}
+            style={{ "--fill": `${settings.soundVolume}%` } as any}
+            onChange={(e) =>
+              dispatch(setSoundVolume(Number(e.target.value)))
+            }
+          />
+          <div className={"Settings-slider-value"}>{settings.soundVolume}%</div>
+        </div>
+      ) : null}
     </>
   );
   const tabButton = (tab: SettingsTab, label: string) => (
@@ -457,7 +477,7 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
       keyboard={true}
       onHide={closeDialog}
     >
-      <Modal.Header>
+      <Modal.Header closeButton>
         <Modal.Title>Settings</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -466,11 +486,13 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
           {tabButton(SettingsTab.Board, "Board")}
           {tabButton(SettingsTab.Background, "Background")}
           {tabButton(SettingsTab.Effects, "Effects")}
+          {tabButton(SettingsTab.Sound, "Sound")}
         </div>
         {activeTab === SettingsTab.Checkers ? checkerTab : null}
         {activeTab === SettingsTab.Board ? boardTab : null}
         {activeTab === SettingsTab.Background ? backgroundTab : null}
         {activeTab === SettingsTab.Effects ? effectsTab : null}
+        {activeTab === SettingsTab.Sound ? soundTab : null}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="primary" onClick={closeDialog}>

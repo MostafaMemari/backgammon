@@ -405,10 +405,68 @@ export const DEFAULT_SOUND_VOLUME = 70;
 export type PerformanceMode = "high" | "medium" | "low";
 
 export const PERFORMANCE_MODES: { id: PerformanceMode; name: string }[] = [
-  { id: "low", name: "Light" },
-  { id: "medium", name: "Balanced" },
-  { id: "high", name: "Full" },
+  { id: "low", name: "Low" },
+  { id: "medium", name: "Medium" },
+  { id: "high", name: "High" },
 ];
+
+/**
+ * Game-style graphics quality presets (like the graphics menu in PC games).
+ *
+ * A preset is a one-click bundle that sets the rendering tier AND the two
+ * effect sliders at once, so a player on a very weak laptop can just pick
+ * "Low" and get the simplest possible look without touching anything else.
+ * Picking a preset, then moving any individual slider, switches the
+ * selection to "custom" (fine-tuning is always allowed).
+ */
+export type GraphicsQuality = PerformanceMode | "custom";
+
+export type GraphicsPresetDef = {
+  id: Exclude<GraphicsQuality, "custom">;
+  name: string;
+  /** Short promise shown under the name ("Best speed", ...). */
+  tagline: string;
+  /** One-line description of what this tier does. */
+  description: string;
+  performanceMode: PerformanceMode;
+  shadowIntensity: number;
+  animationIntensity: number;
+};
+
+export const GRAPHICS_PRESETS: GraphicsPresetDef[] = [
+  {
+    id: "low",
+    name: "Low",
+    tagline: "Best speed",
+    description: "Very simple graphics for old or weak laptops. Everything decorative is off; gameplay stays crisp.",
+    performanceMode: "low",
+    shadowIntensity: 10,
+    animationIntensity: 10,
+  },
+  {
+    id: "medium",
+    name: "Medium",
+    tagline: "Balanced",
+    description: "Same beautiful look, but nothing repaints every frame. Great for most laptops.",
+    performanceMode: "medium",
+    shadowIntensity: 60,
+    animationIntensity: 70,
+  },
+  {
+    id: "high",
+    name: "High",
+    tagline: "Best visuals",
+    description: "Every glow, shadow and ambient animation on. For powerful PCs.",
+    performanceMode: "high",
+    shadowIntensity: 85,
+    animationIntensity: 100,
+  },
+];
+
+/** Maps a rendering tier to the preset that represents it. */
+export function performanceToQuality(mode: PerformanceMode): GraphicsQuality {
+  return mode;
+}
 
 /**
  * Guess the best mode for this device on first visit. Runs once, only when

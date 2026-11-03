@@ -51,6 +51,7 @@ store.subscribe(() => {
     playerOneColor: s.playerOneColor,
     movementDirection: s.movementDirection,
     performanceMode: s.performanceMode,
+    graphicsQuality: s.graphicsQuality,
     optShadows: s.optShadows,
     optAmbient: s.optAmbient,
     optGlow: s.optGlow,
