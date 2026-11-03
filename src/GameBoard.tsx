@@ -399,15 +399,16 @@ const GameBoard: FunctionComponent<GameBoardProps> = ({
   // the timer only runs in Full mode.
   const [checkerPulse, setCheckerPulse] = useState(false);
   const performanceMode = settings.performanceMode;
+  const glowEnabled = settings.optGlow !== false;
   useEffect(() => {
-    if (performanceMode !== "high") {
+    if (performanceMode !== "high" || !glowEnabled) {
       return;
     }
     const interval = setInterval(() => {
       setCheckerPulse((prev) => !prev);
     }, CHECKER_ANIMATION_PULSE_TIMER_MS);
     return () => clearInterval(interval);
-  }, [performanceMode]);
+  }, [performanceMode, glowEnabled]);
 
   // Chime when it becomes this client's turn to act.
   const prevTurnKeyRef = useRef("");

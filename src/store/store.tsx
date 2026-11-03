@@ -51,5 +51,9 @@ store.subscribe(() => {
     playerOneColor: s.playerOneColor,
     movementDirection: s.movementDirection,
     performanceMode: s.performanceMode,
+    optShadows: s.optShadows,
+    optAmbient: s.optAmbient,
+    optGlow: s.optGlow,
+    optGrain: s.optGrain,
   });
 });

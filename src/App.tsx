@@ -40,13 +40,16 @@ const App: FunctionComponent<AppProps> = () => {
 
   // Ambient floating circles are pure decoration. Render far fewer of them
   // (or none) on weaker devices - 100 slowly animating layers is one of the
-  // heaviest things on the page for an old laptop GPU.
-  const circleCount =
-    settings.performanceMode === "low"
-      ? 0
-      : settings.performanceMode === "medium"
-      ? 14
-      : 50;
+  // heaviest things on the page for an old laptop GPU. The advanced graphics
+  // switch (optAmbient) can also turn them off in any preset.
+  const ambientOn = settings.optAmbient !== false;
+  const circleCount = !ambientOn
+    ? 0
+    : settings.performanceMode === "low"
+    ? 0
+    : settings.performanceMode === "medium"
+    ? 14
+    : 50;
 
   const initialFloatingCircles = [];
   const floatingCircles = [];

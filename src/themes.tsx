@@ -461,6 +461,10 @@ export type VisualSettings = {
   shadowIntensity: number;
   animationIntensity: number;
   performanceMode: PerformanceMode;
+  optShadows: boolean;
+  optAmbient: boolean;
+  optGlow: boolean;
+  optGrain: boolean;
 };
 
 function clamp01(v: number): number {
@@ -524,6 +528,13 @@ export function applyVisualSettings(s: VisualSettings): void {
   set("--app-bg", bg.bg);
   set("--circle-color", bg.circle + "24");
 
+  // --- Advanced graphics switches ---
+  // Board texture off: swap the procedural noise tiles for "none" layers so
+  // nothing textured is rasterized at all (lightest option for weak GPUs).
+  const grain = s.optGrain !== false;
+  set("--wood-grain", grain ? WOOD_GRAIN_URI : "none");
+  set("--field-grain", grain ? FIELD_GRAIN_URI : "none");
+
   // --- Effect sliders ---
   const shadow = clamp01(s.shadowIntensity / 100);
   const anim = clamp01(s.animationIntensity / 100);
@@ -548,6 +559,12 @@ export function applyVisualSettings(s: VisualSettings): void {
   const mode: PerformanceMode = s.performanceMode ?? "medium";
   document.body.classList.toggle("perf-med", mode !== "high");
   document.body.classList.toggle("perf-low", mode === "low");
+
+  // Individual graphics switches (game-style advanced options) layered on
+  // top of the preset. Each one maps to a body class consumed in App.scss.
+  document.body.classList.toggle("no-shadows", s.optShadows === false);
+  document.body.classList.toggle("no-ambient", s.optAmbient === false);
+  document.body.classList.toggle("no-glow", s.optGlow === false);
 }
 
 export function colorToCssGradientOfChecker(

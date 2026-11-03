@@ -8,6 +8,10 @@ import { Color, MovementDirection, Player } from "./Types";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
   setAnimationIntensity,
+  setOptAmbient,
+  setOptGlow,
+  setOptGrain,
+  setOptShadows,
   setBackgroundTheme,
   setBoardTheme,
   setCheckerTheme,
@@ -310,9 +314,9 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
           <div className={"Settings-slider-value"}>{settings.soundVolume}%</div>
         </div>
       ) : null}
-      <div className={"Settings-section-title"}>Visual effects</div>
+      <div className={"Settings-section-title"}>Graphics quality</div>
       <div className={"Settings-slider-row"}>
-        <div className={"Settings-slider-label"}>Performance</div>
+        <div className={"Settings-slider-label"}>Preset</div>
         <div className={"Settings-perf-toggle"}>
           {PERFORMANCE_MODES.map((m) => (
             <div
@@ -327,6 +331,67 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
               {m.name}
             </div>
           ))}
+        </div>
+      </div>
+      <div className={"Settings-section-title"}>Advanced graphics</div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Shadows</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.optShadows !== false,
+          })}
+          onClick={() =>
+            dispatch(setOptShadows(settings.optShadows === false))
+          }
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.optShadows !== false ? "ON" : "OFF"}
+          </div>
+        </div>
+      </div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Ambient background</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.optAmbient !== false,
+          })}
+          onClick={() =>
+            dispatch(setOptAmbient(settings.optAmbient === false))
+          }
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.optAmbient !== false ? "ON" : "OFF"}
+          </div>
+        </div>
+      </div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Glow effects</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.optGlow !== false,
+          })}
+          onClick={() => dispatch(setOptGlow(settings.optGlow === false))}
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.optGlow !== false ? "ON" : "OFF"}
+          </div>
+        </div>
+      </div>
+      <div className={"Settings-slider-row"}>
+        <div className={"Settings-slider-label"}>Board texture</div>
+        <div
+          className={cx("Settings-sound-toggle", {
+            on: settings.optGrain !== false,
+          })}
+          onClick={() => dispatch(setOptGrain(settings.optGrain === false))}
+        >
+          <div className={"Settings-sound-toggle-knob"} />
+          <div className={"Settings-sound-toggle-text"}>
+            {settings.optGrain !== false ? "ON" : "OFF"}
+          </div>
         </div>
       </div>
       <div className={"Settings-slider-row"}>
@@ -366,10 +431,11 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
         </div>
       </div>
       <div className={"Settings-hint"}>
-        Performance: Light removes glow filters and ambient animation for
-        smooth play on modest laptops and browsers. Balanced keeps the look
-        but skips continuous effects. Full enables everything. Changes apply
-        instantly and are saved on this device.
+        Graphics presets like in PC games: Light for weak laptops and
+        browsers, Balanced for a fast but still rich look, Full for strong
+        PCs. The advanced switches let you fine-tune each effect - for
+        example keep shadows but turn off ambient motion. Everything applies
+        instantly and is saved on this device.
       </div>
     </>
   );

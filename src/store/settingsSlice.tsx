@@ -24,6 +24,10 @@ type VisualPrefs = {
   soundEnabled?: boolean;
   soundVolume?: number;
   performanceMode?: PerformanceMode;
+  optShadows?: boolean;
+  optAmbient?: boolean;
+  optGlow?: boolean;
+  optGrain?: boolean;
 };
 
 export function loadVisualPrefs(): VisualPrefs {
@@ -46,7 +50,37 @@ export function saveVisualPrefs(prefs: VisualPrefs): void {
   }
 }
 
+/** The individual graphics switches, like the advanced menu of PC games. */
+export type GraphicsOptions = {
+  /** Static drop-shadows under checkers, triangles, titles... */
+  shadows: boolean;
+  /** Slowly floating ambient circles behind the board. */
+  ambient: boolean;
+  /** Pulsing glows on movable/selected checkers, points and roll button. */
+  glow: boolean;
+  /** Procedural wood / felt texture layers on the board. */
+  grain: boolean;
+};
+
+/** The switch combination each quality preset represents. */
+export function graphicsOptionsForMode(mode: PerformanceMode): GraphicsOptions {
+  switch (mode) {
+    case "low":
+      return { shadows: false, ambient: false, glow: false, grain: false };
+    case "medium":
+      return { shadows: true, ambient: true, glow: false, grain: true };
+    default:
+      return { shadows: true, ambient: true, glow: true, grain: true };
+  }
+}
+
 const prefs = loadVisualPrefs();
+
+// Effective quality for this device: the saved preset if the user ever chose
+// one, otherwise the hardware-based guess. The four graphics switches start
+// at whatever this mode implies (users can then override each switch).
+const initialMode = prefs.performanceMode ?? detectPerformanceMode();
+const initialOpts = graphicsOptionsForMode(initialMode);
 
 export const settingsSlice = createSlice({
   name: "settings",
@@ -64,7 +98,11 @@ export const settingsSlice = createSlice({
     soundVolume: prefs.soundVolume ?? DEFAULT_SOUND_VOLUME,
     // Auto-tuned once per device on first visit (weak laptops start in
     // Balanced or Light), then always whatever the user picked.
-    performanceMode: prefs.performanceMode ?? detectPerformanceMode(),
+    performanceMode: initialMode,
+    optShadows: prefs.optShadows ?? initialOpts.shadows,
+    optAmbient: prefs.optAmbient ?? initialOpts.ambient,
+    optGlow: prefs.optGlow ?? initialOpts.glow,
+    optGrain: prefs.optGrain ?? initialOpts.grain,
     showGameOverDialog: false,
     showSettingsMenu: false,
     showMatchSetupScreen: false,
@@ -117,6 +155,30 @@ export const settingsSlice = createSlice({
       action: { type: string; payload: PerformanceMode }
     ) => {
       state.performanceMode = action.payload;
+      // Like a graphics preset in PC games: picking a quality level snaps
+      // every advanced switch to that level. Individual switches can then
+      // be fine-tuned afterwards.
+      const o = graphicsOptionsForMode(action.payload);
+      state.optShadows = o.shadows;
+      state.optAmbient = o.ambient;
+      state.optGlow = o.glow;
+      state.optGrain = o.grain;
+      return state;
+    },
+    setOptShadows: (state, action: { type: string; payload: boolean }) => {
+      state.optShadows = action.payload;
+      return state;
+    },
+    setOptAmbient: (state, action: { type: string; payload: boolean }) => {
+      state.optAmbient = action.payload;
+      return state;
+    },
+    setOptGlow: (state, action: { type: string; payload: boolean }) => {
+      state.optGlow = action.payload;
+      return state;
+    },
+    setOptGrain: (state, action: { type: string; payload: boolean }) => {
+      state.optGrain = action.payload;
       return state;
     },
     setShowGameOverDialog: (
@@ -155,6 +217,10 @@ export const {
   setSoundEnabled,
   setSoundVolume,
   setPerformanceMode,
+  setOptShadows,
+  setOptAmbient,
+  setOptGlow,
+  setOptGrain,
   setShowGameOverDialog,
   setShowSettingsMenu,
   setShowMatchSetupScreen,

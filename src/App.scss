@@ -2473,6 +2473,84 @@ $floating-circle-count: 50;
   animation-duration: 0.01s;
 }
 
+/**********************************************************************
+ * ADVANCED GRAPHICS SWITCHES (Settings > Effects > Advanced graphics) *
+ *                                                                      *
+ * These layer on top of any preset so users can fine-tune exactly      *
+ * like in PC games: e.g. Balanced + shadows off, or Full + ambient     *
+ * off. Selectivity is kept just above the base rules so a switch can   *
+ * never accidentally hide the green move affordances.                  *
+ **********************************************************************/
+
+// GLOW OFF: the pulsing becomes a static glow in every preset. The static
+// glow keeps the affordance readable - only the per-frame animation cost
+// disappears.
+.no-glow .Checker.highlighted-pulse {
+  animation: none;
+  filter: drop-shadow(0 0 0.4vh var(--move-color))
+    drop-shadow(0 0 1vh rgba(var(--move-color-rgb), 0.9)) brightness(1.2);
+  translate: 0 -2.5%;
+}
+
+.no-glow .Checker.selected-pulse {
+  animation: none;
+  filter: drop-shadow(0 0 0.45vh var(--highlight-color))
+    drop-shadow(0 0 1.05vh var(--highlight-color)) brightness(1.18);
+}
+
+.no-glow .Point-wrapper-highlight.to {
+  animation: none;
+  opacity: 0.94;
+}
+
+.no-glow .Roll-button-wrapper {
+  animation: none;
+  filter: drop-shadow(
+    0 0 0.9vh rgba(var(--move-color-rgb), calc(0.3 + 0.4 * var(--anim-scale)))
+  );
+}
+
+// AMBIENT OFF: no floating background circles in any preset.
+.no-ambient .Floating-circle,
+.no-ambient .Initial-floating-circle {
+  display: none;
+}
+
+// SHADOWS OFF: every static drop-shadow filter disappears. Must come after
+// the no-glow block: when both switches are off the plain rule wins and the
+// checkers carry no filter at all.
+.no-shadows .Checker,
+.no-shadows .Point-triangle,
+.no-shadows .Point-triangle-inner,
+.no-shadows .Title-wrapper,
+.no-shadows .Local-multiplayer-button,
+.no-shadows .Online-multiplayer-button,
+.no-shadows .Sound-toggle-button {
+  filter: none;
+}
+
+// ...but keep the green/gold move affordances if glow is still on. These
+// re-asserts outrank the plain no-shadows rule above.
+.no-shadows:not(.no-glow) .Checker.highlighted {
+  filter: drop-shadow(0 0 0.32vh var(--move-color))
+    drop-shadow(0 0 0.85vh rgba(var(--move-color-rgb), 0.85)) brightness(1.16);
+}
+
+.no-shadows:not(.no-glow) .Checker.highlighted-pulse {
+  filter: drop-shadow(0 0 0.4vh var(--move-color))
+    drop-shadow(0 0 1vh rgba(var(--move-color-rgb), 0.9)) brightness(1.2);
+}
+
+.no-shadows:not(.no-glow) .Checker.selected-pulse {
+  filter: drop-shadow(0 0 0.45vh var(--highlight-color))
+    drop-shadow(0 0 1.05vh var(--highlight-color)) brightness(1.18);
+}
+
+// The Light preset is a hard floor: no filters at all, whatever the switches.
+.perf-low .Roll-button-wrapper {
+  filter: none;
+}
+
 /*********************
  * QUICK SOUND TOGGLE *
  *********************/
