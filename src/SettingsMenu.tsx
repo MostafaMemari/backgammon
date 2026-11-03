@@ -488,11 +488,13 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
           {tabButton(SettingsTab.Effects, "Effects")}
           {tabButton(SettingsTab.Sound, "Sound")}
         </div>
-        {activeTab === SettingsTab.Checkers ? checkerTab : null}
-        {activeTab === SettingsTab.Board ? boardTab : null}
-        {activeTab === SettingsTab.Background ? backgroundTab : null}
-        {activeTab === SettingsTab.Effects ? effectsTab : null}
-        {activeTab === SettingsTab.Sound ? soundTab : null}
+        <div className={"Settings-scroll-area"}>
+          {activeTab === SettingsTab.Checkers ? checkerTab : null}
+          {activeTab === SettingsTab.Board ? boardTab : null}
+          {activeTab === SettingsTab.Background ? backgroundTab : null}
+          {activeTab === SettingsTab.Effects ? effectsTab : null}
+          {activeTab === SettingsTab.Sound ? soundTab : null}
+        </div>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="primary" onClick={closeDialog}>

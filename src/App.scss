@@ -1583,7 +1583,9 @@
 }
 
 .Settings-checker-color-label, .Settings-checker-direction-label {
-  padding: 4vh;
+  align-items: center;
+  display: flex;
+  padding: 16px;
 }
 
 .Settings-option-arrow.clockwise {
@@ -2077,56 +2079,116 @@ $floating-circle-count: 50;
  * Settings panel (tabs,
  * theme swatches, sliders)
  ***************************/
+/************************************************************
+ * SETTINGS MENU — responsive redesign
+ *
+ * Layout contract:
+ *   .modal-content   flex column, never taller than the viewport
+ *   .modal-header    fixed at top
+ *   .modal-body      flex column = tabs (fixed) + .Settings-scroll-area
+ *   .modal-footer    fixed at bottom
+ * All sizes are px-based (no vh/vw fonts) so the dialog holds
+ * together on phones, tablets, short laptop windows (e.g.
+ * 1287x680, 1024x600) and large desktops alike.
+ ************************************************************/
+
+// NOTE: `Settings-menu` is applied to the .modal-dialog element itself
+// (react-bootstrap dialogClassName), hence the compound selector here.
+// Bootstrap's centered dialog assumes content fits its min-height;
+// we retake control so a tall dialog can never overflow the screen.
+.Settings-menu.modal-dialog {
+  margin: 8px auto;
+  min-height: calc(100% - 16px);
+  width: min(94vw, 620px);
+  max-width: min(94vw, 620px);
+}
+
 .Settings-menu .modal-content {
-  width: min(94vw, 640px);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 233, 192, 0.14);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 20px);
+  max-height: calc(100dvh - 20px);
+  overflow: hidden;
+  width: 100%;
 }
 
-.Settings-menu .modal-body {
-  padding: 3% 4% 2%;
-  max-height: 70vh;
-  overflow-y: auto;
+.Settings-menu .modal-header {
+  flex: none;
+  padding: 14px 18px 12px;
 }
 
-.Settings-menu .modal-header .close,
-.Game-over-dialog .modal-header .close {
-  color: #CBB98F;
-  font-size: 1.7em;
-  font-weight: normal;
-  opacity: 0.85;
-  text-shadow: none;
+.Settings-menu .modal-title {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+// Bootstrap 5 renders the X as .btn-close (an inline SVG); tint it gold.
+.Settings-menu .btn-close {
+  filter: invert(0.82) sepia(0.55) saturate(2.6) hue-rotate(-12deg);
+  opacity: 0.8;
   transition: 0.15s;
 }
 
-.Settings-menu .modal-header .close:hover,
-.Game-over-dialog .modal-header .close:hover {
-  color: #FFE9C0;
+.Settings-menu .btn-close:hover {
+  filter: invert(0.95) sepia(0.6) saturate(3.2) hue-rotate(-10deg);
   opacity: 1;
 }
 
-// Tab bar: a contained segmented control (like in-game option menus).
+.Settings-menu .modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px 18px 14px;
+}
+
+.Settings-menu .modal-footer {
+  flex: none;
+  padding: 10px 18px 14px;
+}
+
+.Settings-menu .modal-footer .btn {
+  border-width: 1px;
+  font-size: 14px;
+  padding: 7px 22px;
+}
+
+// Tab bar: fixed above the scroll area; slides sideways on narrow
+// screens instead of wrapping or squashing.
 .Settings-tabs {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(240, 208, 146, 0.18);
-  border-radius: 1.8vh;
+  border-radius: 12px;
   display: flex;
-  gap: 0.6%;
-  margin-bottom: 4.5%;
-  padding: 0.55vh;
+  flex: none;
+  gap: 4px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding: 4px;
+  scrollbar-width: none;
   width: 100%;
+}
+
+.Settings-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .Settings-tab {
   background: transparent;
   border: none;
-  border-radius: 1.4vh;
+  border-radius: 9px;
   color: #CBB98F;
   cursor: pointer;
-  flex: 1;
+  flex: 1 0 auto;
   font-family: 'Barlow', sans-serif;
-  font-size: max(0.72em, 0.76vw);
+  font-size: 13px;
   font-weight: bold;
   letter-spacing: 0.03em;
-  padding: 1.1vh 0;
+  padding: 8px 12px;
   text-align: center;
   transition: 0.15s;
   user-select: none;
@@ -2141,52 +2203,88 @@ $floating-circle-count: 50;
 .Settings-tab.active {
   background: linear-gradient(to bottom, #8A5E28, #4F3312);
   box-shadow: inset 0 1px 0 rgba(255, 233, 192, 0.28),
-    0 0 0.8vh rgba(255, 223, 143, 0.22);
+    0 0 6px rgba(255, 223, 143, 0.22);
   color: #FFE9C0;
+}
+
+// The only scrolling region: always visibly scrollable, never clips
+// the header/footer/tabs.
+.Settings-scroll-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  overflow-y: auto;
+  padding: 2px 8px 2px 2px;
+  scrollbar-color: rgba(240, 208, 146, 0.4) rgba(0, 0, 0, 0.2);
+  scrollbar-width: thin;
+}
+
+.Settings-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Settings-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 4px;
+}
+
+.Settings-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(240, 208, 146, 0.32);
+  border-radius: 4px;
+}
+
+.Settings-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(240, 208, 146, 0.55);
 }
 
 .Settings-section-title {
   align-items: center;
   color: #FFE9C0;
   display: flex;
-  font-size: max(0.8em, 0.85vw);
+  flex-wrap: wrap;
+  font-size: 13px;
   font-weight: bold;
-  gap: 2.5%;
-  letter-spacing: 0.06em;
-  margin: 2.5% 0 3%;
-  opacity: 0.95;
+  gap: 10px;
+  letter-spacing: 0.07em;
+  margin: 14px 0 10px;
+  row-gap: 8px;
   text-transform: uppercase;
+}
+
+.Settings-scroll-area .Settings-section-title:first-child {
+  margin-top: 2px;
 }
 
 // Gold hairline after the title text (section divider).
 .Settings-section-title::after {
-  content: "";
   background: linear-gradient(
     to right,
     rgba(240, 208, 146, 0.35),
     rgba(240, 208, 146, 0)
   );
+  content: "";
   flex: 1;
   height: 1px;
+  min-width: 20px;
 }
 
 .Settings-theme-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 2.5%;
+  gap: 10px;
   justify-content: center;
-  margin-bottom: 4%;
-  width: 100%;
+  margin-bottom: 8px;
 }
 
 .Settings-theme-chip {
   background: rgba(0, 0, 0, 0.25);
   border: 2px solid rgba(240, 208, 146, 0.25);
-  border-radius: 0.7vw;
+  border-radius: 12px;
   cursor: pointer;
-  padding: 1.2%;
+  flex: 0 1 105px;
+  min-width: 96px;
+  padding: 6px;
   transition: 0.15s;
-  width: 17.5%;
 }
 
 .Settings-theme-chip:hover {
@@ -2196,13 +2294,12 @@ $floating-circle-count: 50;
 
 .Settings-theme-chip.selected {
   border-color: #FFDF8F;
-  box-shadow: 0 0 1vh rgba(255, 223, 143, 0.45);
+  box-shadow: 0 0 8px rgba(255, 223, 143, 0.45);
 }
 
 .Settings-chip-preview {
-  border-radius: 0.45vw;
-  height: 6.5vh;
-  min-height: 40px;
+  aspect-ratio: 8 / 5;
+  border-radius: 7px;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -2210,10 +2307,10 @@ $floating-circle-count: 50;
 
 .Settings-chip-name {
   color: #CBB98F;
-  font-size: max(0.6em, 0.62vw);
-  margin-top: 6%;
+  font-size: 11px;
+  line-height: 1.25;
+  margin-top: 6px;
   text-align: center;
-  line-height: 1.15;
 }
 
 .Settings-theme-chip.selected .Settings-chip-name {
@@ -2254,7 +2351,7 @@ $floating-circle-count: 50;
 }
 
 .Settings-board-preview .mini-field {
-  border-radius: 0.35vw;
+  border-radius: 4px;
   height: 74%;
   left: 12%;
   overflow: hidden;
@@ -2281,39 +2378,52 @@ $floating-circle-count: 50;
   top: 0;
 }
 
+// Slider / toggle rows: full-width card rows, label left, control
+// right — no dead space, nothing can overlap.
 .Settings-slider-row {
   align-items: center;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(240, 208, 146, 0.13);
+  border-radius: 10px;
   display: flex;
-  margin-bottom: 3.5%;
-  width: 100%;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  min-width: 0;
+  padding: 8px 12px;
 }
 
 .Settings-slider-label {
   color: #E3D5B8;
-  font-size: max(0.75em, 0.78vw);
-  width: 42%;
+  flex: none;
+  font-size: 13px;
 }
 
 .Settings-slider {
-  flex: 1;
-  height: 1.4vh;
-  appearance: none;
   -webkit-appearance: none;
-  background: linear-gradient(to right, #C9A25A var(--fill, 50%), rgba(255, 233, 192, 0.15) var(--fill, 50%));
-  border-radius: 1vh;
+  appearance: none;
+  background: linear-gradient(
+    to right,
+    #C9A25A var(--fill, 50%),
+    rgba(255, 233, 192, 0.15) var(--fill, 50%)
+  );
+  border-radius: 99px;
   cursor: pointer;
+  flex: 1 1 40px;
+  height: 6px;
+  min-width: 0;
   outline: none;
 }
 
 .Settings-slider::-webkit-slider-thumb {
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
   border: 1px solid #5C3E1C;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  height: 2.4vh;
-  width: 2.4vh;
+  height: 16px;
+  width: 16px;
 }
 
 .Settings-slider::-moz-range-thumb {
@@ -2321,42 +2431,45 @@ $floating-circle-count: 50;
   border: 1px solid #5C3E1C;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  height: 2.2vh;
-  width: 2.2vh;
+  height: 14px;
+  width: 14px;
 }
 
 .Settings-slider-value {
   color: #FFE9C0;
-  font-size: max(0.7em, 0.72vw);
-  min-width: 3.2em;
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
   text-align: right;
 }
 
 .Settings-hint {
   color: #A89878;
-  font-size: max(0.62em, 0.64vw);
-  line-height: 1.4;
-  margin-top: 1%;
+  font-size: 11.5px;
+  line-height: 1.55;
+  margin-top: 12px;
 }
 
-/*************************************************
+/***************************************************
  * SETTINGS: GRAPHICS QUALITY PRESETS (game-style) *
- *************************************************/
+ ***************************************************/
 
 // "Auto-detect" pill on the Graphics quality title row.
 .Settings-menu .Settings-auto-btn {
   background: rgba(255, 233, 192, 0.08);
   border: 1px solid rgba(240, 208, 146, 0.35);
-  border-radius: 2vh;
+  border-radius: 999px;
   color: #CBB98F;
   cursor: pointer;
   flex: none;
-  font-size: max(0.6em, 0.62vw);
+  font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.05em;
-  padding: 0.55vh 1.1vw;
+  padding: 4px 12px;
   transition: 0.15s;
   user-select: none;
+  white-space: nowrap;
 }
 
 .Settings-menu .Settings-auto-btn:hover {
@@ -2366,19 +2479,19 @@ $floating-circle-count: 50;
 }
 
 .Settings-quality-grid {
-  display: flex;
-  gap: 2.5%;
-  margin-bottom: 2.5%;
-  width: 100%;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 10px;
 }
 
 .Settings-quality-card {
   background: rgba(0, 0, 0, 0.28);
   border: 2px solid rgba(240, 208, 146, 0.25);
-  border-radius: 0.8vw;
+  border-radius: 12px;
   cursor: pointer;
-  flex: 1;
-  padding: 1.5vh 3% 1.3vh;
+  min-width: 0;
+  padding: 12px 10px 10px;
   position: relative;
   text-align: center;
   transition: 0.15s;
@@ -2397,30 +2510,30 @@ $floating-circle-count: 50;
     rgba(0, 0, 0, 0.3)
   );
   border-color: #FFDF8F;
-  box-shadow: 0 0 1vh rgba(255, 223, 143, 0.4);
+  box-shadow: 0 0 8px rgba(255, 223, 143, 0.4);
 }
 
 .Settings-quality-name {
   color: #FFE9C0;
-  font-size: max(0.95em, 1vw);
+  font-size: 15px;
   font-weight: bold;
   letter-spacing: 0.05em;
 }
 
 .Settings-quality-tagline {
   color: #C9A25A;
-  font-size: max(0.6em, 0.62vw);
+  font-size: 10px;
   font-weight: bold;
   letter-spacing: 0.09em;
-  margin-top: 0.4vh;
+  margin-top: 2px;
   text-transform: uppercase;
 }
 
 .Settings-quality-desc {
   color: #A89878;
-  font-size: max(0.58em, 0.6vw);
-  line-height: 1.35;
-  margin-top: 0.7vh;
+  font-size: 11px;
+  line-height: 1.45;
+  margin-top: 6px;
 }
 
 .Settings-quality-card.selected .Settings-quality-desc {
@@ -2430,80 +2543,212 @@ $floating-circle-count: 50;
 // Gold check badge on the selected preset card.
 .Settings-quality-check {
   align-items: center;
-  background: radial-gradient(
-    circle at 35% 30%,
-    #FFF3C4,
-    #D9B45C 60%,
-    #8A6435
-  );
+  background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
   color: #3A2810;
   display: flex;
-  font-size: max(0.65em, 0.68vw);
+  font-size: 11px;
   font-weight: bold;
-  height: 2.5vh;
+  height: 20px;
   justify-content: center;
-  min-height: 19px;
-  min-width: 19px;
   position: absolute;
-  right: -0.9vh;
-  top: -0.9vh;
-  width: 2.5vh;
+  right: -7px;
+  top: -7px;
+  width: 20px;
 }
 
 .Settings-custom-note {
   color: #C9A25A;
-  font-size: max(0.62em, 0.64vw);
+  font-size: 11.5px;
   font-style: italic;
-  margin: -0.5% 0 2.5%;
+  margin: -2px 0 10px;
 }
 
-// Phones: five tabs need tighter type and the three quality cards are
-// easier to read stacked than squeezed side by side.
-@media screen and (orientation: portrait) {
-  .Settings-menu .modal-content {
-    width: 96vw;
+/****************************
+ * SETTINGS: SOUND + TOGGLES *
+ ****************************/
+
+.Settings-menu .Settings-sound-toggle {
+  background: rgba(255, 233, 192, 0.08);
+  border: 1px solid rgba(240, 208, 146, 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+  flex: none;
+  height: 26px;
+  position: relative;
+  transition: 0.2s;
+  width: 56px;
+}
+
+.Settings-menu .Settings-sound-toggle.on {
+  background: linear-gradient(to right, #4E7A46, #3A5C35);
+  border-color: rgba(140, 220, 140, 0.6);
+}
+
+.Settings-menu .Settings-sound-toggle-knob {
+  background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  height: 20px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: left 0.2s;
+  width: 20px;
+}
+
+.Settings-menu .Settings-sound-toggle.on .Settings-sound-toggle-knob {
+  left: calc(100% - 22px);
+}
+
+.Settings-menu .Settings-sound-toggle-text {
+  color: #CBB98F;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.Settings-menu .Settings-sound-toggle.on .Settings-sound-toggle-text {
+  color: #DFF2D8;
+  left: 8px;
+  right: auto;
+}
+
+// Narrow screens (phones in portrait): stack the quality cards and
+// tighten the frame.
+@media (max-width: 560px) {
+  .Settings-menu.modal-dialog {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+  }
+
+  .Settings-menu .modal-header {
+    padding: 12px 14px 10px;
+  }
+
+  .Settings-menu .modal-body {
+    padding: 10px 12px 12px;
+  }
+
+  .Settings-menu .modal-footer {
+    padding: 8px 14px 12px;
   }
 
   .Settings-tab {
-    font-size: max(0.6em, 2.2vw);
-    letter-spacing: 0;
-    padding: 1vh 0;
+    font-size: 12px;
+    padding: 7px 10px;
   }
 
   .Settings-quality-grid {
-    flex-direction: column;
-    gap: 1.6%;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .Settings-quality-card {
-    padding: 1.2vh 3% 1.1vh;
+    padding: 10px 12px 9px;
   }
 
-  .Settings-quality-name {
-    font-size: max(0.9em, 3.4vw);
+  .Settings-theme-grid {
+    gap: 8px;
   }
 
-  .Settings-quality-tagline {
-    font-size: max(0.58em, 2.3vw);
+  .Settings-theme-chip {
+    flex: 0 1 96px;
+    min-width: 88px;
   }
 
+  .Settings-slider-row {
+    padding: 8px 10px;
+  }
+
+  .Settings-hint {
+    font-size: 11px;
+  }
+}
+
+// Short windows (landscape phones, small laptop heights): compress the
+// frame so the tabs + content + footer always fit.
+@media (max-height: 520px) {
+  .Settings-menu .modal-header {
+    padding: 8px 16px 6px;
+  }
+
+  .Settings-menu .modal-body {
+    padding: 8px 16px 10px;
+  }
+
+  .Settings-menu .modal-footer {
+    padding: 6px 16px 8px;
+  }
+
+  .Settings-menu .modal-footer .btn {
+    padding: 5px 18px;
+  }
+
+  .Settings-tabs {
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 3px;
+  }
+
+  .Settings-tab {
+    padding: 5px 10px;
+  }
+
+  .Settings-section-title {
+    margin: 10px 0 8px;
+  }
+
+  .Settings-quality-card {
+    padding: 8px 8px 7px;
+  }
+
+  // Descriptions cost too much height here; the tagline carries the idea.
   .Settings-quality-desc {
-    font-size: max(0.6em, 2.4vw);
+    display: none;
   }
 
-  .Settings-menu .Settings-auto-btn {
-    font-size: max(0.6em, 2.2vw);
-    padding: 0.5vh 2.4vw;
+  .Settings-hint {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
-  .Settings-custom-note {
-    font-size: max(0.6em, 2.3vw);
+  .Settings-slider-row {
+    margin-bottom: 6px;
+    padding: 6px 10px;
   }
 
-  .Settings-menu .Settings-perf-toggle {
-    width: 30vw;
+  .Settings-checker-color-label,
+  .Settings-checker-direction-label {
+    padding: 10px 14px;
+  }
+}
+
+@media (max-height: 400px) {
+  .Settings-hint {
+    display: none;
+  }
+}
+
+// Very narrow phones: squeeze the tab labels so all five fit without
+// side-scrolling.
+@media (max-width: 400px) {
+  .Settings-tabs {
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .Settings-tab {
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+    padding: 6px 7px;
   }
 }
 
@@ -2802,99 +3047,5 @@ $floating-circle-count: 50;
   .Sound-toggle-button-wrapper {
     right: calc(2% + 3.8vh);
   }
-}
-
-/**************************
- * SETTINGS: SOUND TOGGLE  *
- **************************/
-.Settings-menu .Settings-sound-toggle {
-  align-items: center;
-  background: rgba(255, 233, 192, 0.08);
-  border: 1px solid rgba(240, 208, 146, 0.35);
-  border-radius: 2vh;
-  cursor: pointer;
-  display: flex;
-  height: 3.2vh;
-  justify-content: flex-end;
-  min-height: 26px;
-  min-width: 70px;
-  padding: 0.4vh;
-  position: relative;
-  transition: 0.2s;
-  width: 4.6vw;
-}
-
-.Settings-menu .Settings-sound-toggle.on {
-  background: linear-gradient(to right, #4E7A46, #3A5C35);
-  border-color: rgba(140, 220, 140, 0.6);
-  justify-content: flex-start;
-}
-
-.Settings-menu .Settings-sound-toggle-knob {
-  background: radial-gradient(circle at 35% 30%, #FFF3C4, #D9B45C 60%, #8A6435);
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  height: 100%;
-  position: absolute;
-  left: 0.4vh;
-  top: 0.4vh;
-  bottom: 0.4vh;
-  aspect-ratio: 1;
-  transition: 0.2s;
-}
-
-.Settings-menu .Settings-sound-toggle.on .Settings-sound-toggle-knob {
-  left: calc(100% - 0.4vh - 2.4vh);
-}
-
-.Settings-menu .Settings-sound-toggle-text {
-  color: #CBB98F;
-  font-size: max(0.6em, 0.62vw);
-  font-weight: bold;
-  margin: 0 0.9vw 0 2.6vw;
-  letter-spacing: 0.06em;
-}
-
-.Settings-menu .Settings-sound-toggle.on .Settings-sound-toggle-text {
-  color: #DFF2D8;
-  margin: 0 2.6vw 0 0.9vw;
-}
-
-/*******************************
- * SETTINGS: PERFORMANCE SELECT *
- *******************************/
-.Settings-menu .Settings-perf-toggle {
-  background: rgba(255, 233, 192, 0.08);
-  border: 1px solid rgba(240, 208, 146, 0.35);
-  border-radius: 2vh;
-  cursor: pointer;
-  display: flex;
-  height: 3.2vh;
-  min-height: 26px;
-  min-width: 170px;
-  overflow: hidden;
-  width: 11vw;
-}
-
-.Settings-menu .Settings-perf-option {
-  align-items: center;
-  color: #CBB98F;
-  display: flex;
-  flex: 1;
-  font-size: max(0.6em, 0.62vw);
-  font-weight: bold;
-  justify-content: center;
-  letter-spacing: 0.04em;
-  transition: background 0.2s, color 0.2s;
-}
-
-.Settings-menu .Settings-perf-option:hover {
-  color: #F0E2BC;
-}
-
-.Settings-menu .Settings-perf-option.selected {
-  background: linear-gradient(to bottom, #6E8A5C, #46603C);
-  color: #EAF4E2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
