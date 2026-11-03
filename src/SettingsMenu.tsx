@@ -301,9 +301,6 @@ const SettingsMenu: FunctionComponent<SettingsMenuProps> = ({
             })}
             onClick={() => dispatch(applyGraphicsPreset(p.id))}
           >
-            {settings.graphicsQuality === p.id ? (
-              <div className={"Settings-quality-check"}>✓</div>
-            ) : null}
             <div className={"Settings-quality-name"}>{p.name}</div>
             <div className={"Settings-quality-tagline"}>{p.tagline}</div>
             <div className={"Settings-quality-desc"}>{p.description}</div>

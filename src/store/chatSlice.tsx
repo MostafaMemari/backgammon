@@ -1,28 +1,31 @@
-// Redux state for the in-game chat panel.
+// Redux state for the in-game sticker system.
 //
 // The slice mirrors the room document's `chat.messages` field into local
-// state, tracks unread messages from the opponent and a small "board bubble"
-// that flashes the latest opponent message over the game. Optimistic sends
-// appear instantly and are confirmed (or dropped with a visible failure
-// state) once the write to /api/room resolves.
+// state purely as a transport history — the UI shows no message list. When a
+// sticker arrives (from the opponent over the poll, or optimistically from a
+// local tap) it becomes a big animated "pop" over the board, like the emotes
+// in real mobile games. Sends are optimistic: the pop shows instantly and the
+// write to /api/room confirms (or visibly fails) in the background.
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import {
   ChatMessage,
-  ChatMessageKind,
   ChatPlayerSide,
   CHAT_MAX_MESSAGES,
   createChatMessageId,
+  getSticker,
+  isRenderableSticker,
   toWireMessages,
   writeChatMessages,
 } from "../chat";
 import { AppDispatch, RootState } from "./store";
 
-type ChatBubble = {
-  text: string;
-  kind: ChatMessageKind;
-  // Increments per bubble so the same sticker re-triggers the animation.
+export type StickerPop = {
+  stickerId: string;
+  // True when the local player sent it (shows instantly, no sound).
+  mine: boolean;
+  // Increments per pop so the same sticker re-triggers the animation.
   seq: number;
 };
 
@@ -30,10 +33,10 @@ type ChatState = {
   connected: boolean;
   roomCode: string | null;
   mySide: ChatPlayerSide | null;
+  // Transport history only — kept so writes merge instead of wiping history.
   messages: ChatMessage[];
-  open: boolean;
-  unread: number;
-  bubble: ChatBubble | null;
+  pickerOpen: boolean;
+  pop: StickerPop | null;
   sendError: boolean;
 };
 
@@ -42,9 +45,8 @@ const InitialChatState: ChatState = {
   roomCode: null,
   mySide: null,
   messages: [],
-  open: false,
-  unread: 0,
-  bubble: null,
+  pickerOpen: false,
+  pop: null,
   sendError: false,
 };
 
@@ -72,7 +74,7 @@ const chatSlice = createSlice({
   initialState: InitialChatState,
   reducers: {
     // First sync after connecting (or reconnecting): load history silently —
-    // no unread counter, no bubble for old messages.
+    // no pop for old stickers.
     chatSeed(
       state,
       action: PayloadAction<{
@@ -85,11 +87,12 @@ const chatSlice = createSlice({
       state.mySide = action.payload.mySide;
       state.roomCode = action.payload.roomCode;
       state.messages = mergeIncoming(state.messages, action.payload.messages);
-      state.unread = 0;
-      state.bubble = null;
+      state.pickerOpen = false;
+      state.pop = null;
+      state.sendError = false;
     },
-    // Subsequent syncs: merge in whatever is new and count opponent messages
-    // that arrived while the panel was closed.
+    // Subsequent syncs: merge in whatever is new and pop the latest opponent
+    // sticker big over the board.
     chatIncoming(
       state,
       action: PayloadAction<{
@@ -100,7 +103,7 @@ const chatSlice = createSlice({
     ) {
       if (!state.connected) {
         // Seed was missed (e.g. the first poll carried no chat field);
-        // behave like a seed so old history never counts as unread.
+        // behave like a seed so old history never pops.
         state.connected = true;
         state.mySide = action.payload.mySide;
         state.roomCode = action.payload.roomCode;
@@ -115,51 +118,52 @@ const chatSlice = createSlice({
 
       const prevIds = new Set(state.messages.map((message) => message.id));
       const incoming = action.payload.messages;
-      const newFromOpponent = incoming.filter(
-        (message) =>
-          message.from !== state.mySide && !prevIds.has(message.id)
-      );
-
       state.messages = mergeIncoming(state.messages, incoming);
 
-      if (!state.open) {
-        state.unread += newFromOpponent.length;
-        const last = newFromOpponent[newFromOpponent.length - 1];
-        if (last != null) {
-          state.bubble = {
-            text: last.text,
-            kind: last.kind,
-            seq: (state.bubble != null ? state.bubble.seq : 0) + 1,
-          };
-        }
+      const newFromOpponent = incoming.filter(
+        (message) =>
+          message.from !== state.mySide &&
+          !prevIds.has(message.id) &&
+          isRenderableSticker(message)
+      );
+      const last = newFromOpponent[newFromOpponent.length - 1];
+      if (last != null) {
+        state.pop = {
+          stickerId: getSticker(last.text)!.id,
+          mine: false,
+          seq: (state.pop != null ? state.pop.seq : 0) + 1,
+        };
       }
     },
     chatDisconnected() {
       return InitialChatState;
     },
-    chatSetOpen(state, action: PayloadAction<boolean>) {
-      state.open = action.payload;
+    chatSetPickerOpen(state, action: PayloadAction<boolean>) {
+      state.pickerOpen = action.payload;
       if (action.payload) {
-        state.unread = 0;
-        state.bubble = null;
         state.sendError = false;
       }
     },
-    chatToggleOpen(state) {
-      state.open = !state.open;
-      if (state.open) {
-        state.unread = 0;
-        state.bubble = null;
+    chatTogglePicker(state) {
+      state.pickerOpen = !state.pickerOpen;
+      if (state.pickerOpen) {
         state.sendError = false;
       }
     },
-    chatHideBubble(state) {
-      state.bubble = null;
+    chatHidePop(state) {
+      state.pop = null;
     },
-    chatMessagePending(state, action: PayloadAction<ChatMessage>) {
-      state.messages = [...state.messages, action.payload].slice(
+    chatClearSendError(state) {
+      state.sendError = false;
+    },
+    chatMessagePending(
+      state,
+      action: PayloadAction<{ message: ChatMessage; pop: StickerPop }>
+    ) {
+      state.messages = [...state.messages, action.payload.message].slice(
         -CHAT_MAX_MESSAGES
       );
+      state.pop = action.payload.pop;
       state.sendError = false;
     },
     chatMessageDelivered(state, action: PayloadAction<string>) {
@@ -177,10 +181,6 @@ const chatSlice = createSlice({
       }
       state.sendError = true;
     },
-    chatRemoveMessage(state, action: PayloadAction<string>) {
-      state.messages = state.messages.filter((m) => m.id !== action.payload);
-      state.sendError = false;
-    },
   },
 });
 
@@ -188,21 +188,22 @@ export const {
   chatSeed,
   chatIncoming,
   chatDisconnected,
-  chatSetOpen,
-  chatToggleOpen,
-  chatHideBubble,
+  chatSetPickerOpen,
+  chatTogglePicker,
+  chatHidePop,
+  chatClearSendError,
   chatMessagePending,
   chatMessageDelivered,
   chatMessageFailed,
-  chatRemoveMessage,
 } = chatSlice.actions;
 
 /**
- * Append a message optimistically, then persist the merged list to the room
- * document. The message shows instantly for the sender; if the write fails
- * it is marked with a visible failure state and can be retried with a tap.
+ * Send a ready-made sticker: pop it over the local board instantly, then
+ * persist the merged history to the room document so the opponent's poll
+ * delivers the same pop. If the write fails, a small error note appears in
+ * the picker and the sticker is dropped from the wire history.
  */
-export function sendChatMessage(kind: ChatMessageKind, rawText: string) {
+export function sendSticker(stickerId: string) {
   return async (
     dispatch: AppDispatch,
     getState: () => RootState
@@ -211,23 +212,24 @@ export function sendChatMessage(kind: ChatMessageKind, rawText: string) {
     if (!chat.connected || chat.mySide == null || chat.roomCode == null) {
       return;
     }
-    const text =
-      kind === "sticker"
-        ? rawText.trim().slice(0, 8)
-        : rawText.trim().slice(0, 140);
-    if (text.length === 0) {
+    if (getSticker(stickerId) == null) {
       return;
     }
 
     const message: ChatMessage = {
       id: createChatMessageId(),
       from: chat.mySide,
-      kind,
-      text,
+      kind: "sticker",
+      text: stickerId,
       t: Date.now(),
       pending: true,
     };
-    dispatch(chatMessagePending(message));
+    const pop: StickerPop = {
+      stickerId,
+      mine: true,
+      seq: (chat.pop != null ? chat.pop.seq : 0) + 1,
+    };
+    dispatch(chatMessagePending({ message, pop }));
 
     try {
       const wire = toWireMessages(getState().chat.messages);

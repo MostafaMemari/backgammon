@@ -270,6 +270,26 @@ export function playChatReceive(): void {
   });
 }
 
+/** Playful rising "boing-pop" when a sticker bursts onto the board. */
+export function playStickerPop(): void {
+  play((context, out, t0) => {
+    const vol = soundVolume();
+    const osc = context.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(260, t0);
+    osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.16);
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(0.2 * vol, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.24);
+    osc.connect(gain).connect(out);
+    osc.start(t0);
+    osc.stop(t0 + 0.28);
+    // Little "tick" on top so it reads as a bubble bursting.
+    noiseBurst(context, out, t0, 0.03, "highpass", 2400, 0.1 * vol);
+  });
+}
+
 /** Sober descending pair when the local player loses. */
 export function playLose(): void {
   play((context, out, t0) => {

@@ -1,301 +1,157 @@
-// In-game chat: floating button + panel with ready-made quick phrases,
-// stickers and free text. Rendered only inside networked rooms (an opponent
-// is required for chat to make sense).
-//
-// Layout is deliberately compact and responsive: the panel anchors under the
-// top-right icon cluster on desktop and becomes a near-full-width sheet on
-// phones. All sizes are px/vh based so nothing overlaps at any viewport.
+// In-game ready-made stickers ("استیکر آماده"), like the emotes in real
+// mobile games. A floating button opens the sticker pack; tapping a sticker
+// makes it pop BIG in the middle of both boards for a couple of seconds.
+// No free-text chat, no message history — pure game-style emotes.
 
 import cx from "classnames";
-import { FunctionComponent, useEffect, useRef, useState } from "react";
+import { FunctionComponent, useEffect, useRef } from "react";
 
+import { GAME_STICKERS, GameSticker, getSticker } from "./chat";
+import { playChatReceive, playSelect, playStickerPop } from "./sound";
 import {
-  CHAT_STICKERS,
-  CHAT_MAX_TEXT_LENGTH,
-  ChatMessage,
-  QUICK_PHRASES_EN,
-  QUICK_PHRASES_FA,
-} from "./chat";
-import { playChatReceive, playSelect } from "./sound";
-import {
-  chatHideBubble,
-  chatRemoveMessage,
-  chatSetOpen,
-  chatToggleOpen,
-  sendChatMessage,
+  chatClearSendError,
+  chatHidePop,
+  chatSetPickerOpen,
+  chatTogglePicker,
+  sendSticker,
 } from "./store/chatSlice";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 
-type ChatMode = "text" | "phrases" | "stickers";
+const POP_VISIBLE_MS = 2400;
+const SEND_ERROR_VISIBLE_MS = 4000;
 
-const BUBBLE_VISIBLE_MS = 3800;
-
-const ChatPanel: FunctionComponent<{ roomCode: string }> = ({ roomCode }) => {
+const ChatPanel: FunctionComponent<{ roomCode: string }> = () => {
   const chat = useAppSelector((state) => state.chat);
   const dispatch = useAppDispatch();
 
-  const [mode, setMode] = useState<ChatMode>("text");
-  const [draft, setDraft] = useState("");
-  const messagesRef = useRef<HTMLDivElement | null>(null);
-
-  // Keep the message list pinned to the newest message.
+  // Auto-hide the big board pop.
   useEffect(() => {
-    const element = messagesRef.current;
-    if (element != null) {
-      element.scrollTop = element.scrollHeight;
-    }
-  }, [chat.messages.length, chat.open, mode]);
-
-  // A one-shot receive blip for messages that arrive after the initial sync.
-  const knownIdsRef = useRef<Set<string> | null>(null);
-  useEffect(() => {
-    const known = knownIdsRef.current;
-    if (known == null) {
-      knownIdsRef.current = new Set(chat.messages.map((m) => m.id));
-      return;
-    }
-    let received = false;
-    for (const message of chat.messages) {
-      if (!known.has(message.id)) {
-        received = true;
-        known.add(message.id);
-      }
-    }
-    if (received) {
-      playChatReceive();
-    }
-  }, [chat.messages]);
-
-  // Auto-hide the board bubble.
-  useEffect(() => {
-    if (chat.bubble == null) {
+    if (chat.pop == null) {
       return;
     }
     const timer = window.setTimeout(() => {
-      dispatch(chatHideBubble());
-    }, BUBBLE_VISIBLE_MS);
+      dispatch(chatHidePop());
+    }, POP_VISIBLE_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.bubble != null ? chat.bubble.seq : 0]);
+  }, [chat.pop != null ? chat.pop.seq : 0]);
 
-  const send = (kind: ChatMessage["kind"], text: string) => {
-    dispatch(sendChatMessage(kind, text));
-    if (kind === "text") {
-      setDraft("");
+  // Sounds: a soft blip when the opponent's sticker pops, a playful pop when
+  // the local one does (played at send time inside send()).
+  const lastSeqRef = useRef<number>(-1);
+  useEffect(() => {
+    if (chat.pop == null) {
+      return;
     }
+    if (lastSeqRef.current === chat.pop.seq) {
+      return;
+    }
+    lastSeqRef.current = chat.pop.seq;
+    if (!chat.pop.mine) {
+      playChatReceive();
+    }
+  }, [chat.pop]);
+
+  // Auto-clear the send-error note.
+  useEffect(() => {
+    if (!chat.sendError) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      dispatch(chatClearSendError());
+    }, SEND_ERROR_VISIBLE_MS);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat.sendError]);
+
+  const send = (sticker: GameSticker) => {
     playSelect();
+    playStickerPop();
+    dispatch(sendSticker(sticker.id));
+    // Real games close the emote wheel after a pick — do the same.
+    dispatch(chatSetPickerOpen(false));
   };
 
-  const retryFailed = (message: ChatMessage) => {
-    dispatch(chatRemoveMessage(message.id));
-    dispatch(sendChatMessage(message.kind, message.text));
-  };
-
-  const renderMessage = (message: ChatMessage) => {
-    const mine = message.from === chat.mySide;
-    return (
-      <div
-        key={message.id}
-        className={cx("Chat-msg-row", mine ? "mine" : "theirs")}
-      >
-        <div
-          className={cx("Chat-msg", message.kind, {
-            mine,
-            pending: message.pending === true,
-            failed: message.failed === true,
-          })}
-          dir="auto"
-          title={message.failed ? "Not delivered — tap to retry" : undefined}
-          onClick={
-            message.failed ? () => retryFailed(message) : undefined
-          }
-        >
-          {message.kind === "sticker" ? (
-            <span className={"Chat-msg-sticker"}>{message.text}</span>
-          ) : (
-            <span className={"Chat-msg-text"}>{message.text}</span>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const popSticker = chat.pop != null ? getSticker(chat.pop.stickerId) : null;
 
   return (
     <>
-      <div className={"Chat-button-wrapper"}>
+      <div className={"Sticker-button-wrapper"}>
         <div
-          className={"Chat-button"}
-          title={"Chat with your opponent"}
+          className={"Sticker-button"}
+          title={"Send a sticker"}
           onClick={() => {
-            dispatch(chatToggleOpen());
+            playSelect();
+            dispatch(chatTogglePicker());
           }}
         >
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M4.5 4h15A1.5 1.5 0 0 1 21 5.5v10a1.5 1.5 0 0 1-1.5 1.5H12l-4.6 3.6c-.5.4-1.2 0-1.2-.6V17H4.5A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4Z"
+            {/* Round sticker badge with a smiley */}
+            <circle
+              cx="12"
+              cy="12"
+              r="8.2"
               fill="currentColor"
-              opacity="0.18"
+              opacity="0.16"
             />
+            <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+            <circle cx="9.2" cy="10.2" r="1.05" fill="currentColor" />
+            <circle cx="14.8" cy="10.2" r="1.05" fill="currentColor" />
             <path
-              d="M4.5 4h15A1.5 1.5 0 0 1 21 5.5v10a1.5 1.5 0 0 1-1.5 1.5H12l-4.6 3.6c-.5.4-1.2 0-1.2-.6V17H4.5A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4Z"
+              d="M8.6 14c.9 1.15 2.05 1.72 3.4 1.72s2.5-.57 3.4-1.72"
               stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
+              strokeWidth="1.5"
+              strokeLinecap="round"
             />
-            <circle cx="8.2" cy="10.5" r="1.15" fill="currentColor" />
-            <circle cx="12" cy="10.5" r="1.15" fill="currentColor" />
-            <circle cx="15.8" cy="10.5" r="1.15" fill="currentColor" />
           </svg>
-          {chat.unread > 0 ? (
-            <div className={"Chat-unread-badge"}>
-              {chat.unread > 9 ? "9+" : chat.unread}
-            </div>
-          ) : null}
         </div>
       </div>
 
-      {chat.open ? (
+      {chat.pickerOpen ? (
         <>
-          <div className={"Chat-backdrop"} onClick={() => dispatch(chatSetOpen(false))} />
-          <div className={"Chat-panel"}>
-            <div className={"Chat-panel-header"}>
-              <span className={"Chat-panel-title"}>Chat</span>
-              <span className={"Chat-panel-hint"}>{roomCode}</span>
+          <div
+            className={"Sticker-backdrop"}
+            onClick={() => dispatch(chatSetPickerOpen(false))}
+          />
+          <div className={"Sticker-picker"}>
+            <div className={"Sticker-picker-header"}>
+              <span className={"Sticker-picker-title"}>Stickers</span>
               <div
-                className={"Chat-panel-close"}
-                onClick={() => dispatch(chatSetOpen(false))}
+                className={"Sticker-picker-close"}
+                onClick={() => dispatch(chatSetPickerOpen(false))}
               >
                 ×
               </div>
             </div>
-            <div className={"Chat-messages"} ref={messagesRef}>
-              {chat.messages.length === 0 ? (
-                <div className={"Chat-empty"}>
-                  <div className={"Chat-empty-sticker"}>🎲</div>
-                  Say hi to your opponent!
-                </div>
-              ) : (
-                chat.messages.map(renderMessage)
-              )}
-            </div>
-            <div className={"Chat-modes"}>
-              <div
-                className={cx("Chat-mode-btn", { active: mode === "text" })}
-                title="Type a message"
-                onClick={() => setMode("text")}
-              >
-                💬
-              </div>
-              <div
-                className={cx("Chat-mode-btn", { active: mode === "phrases" })}
-                title="Ready-made phrases"
-                onClick={() => setMode("phrases")}
-              >
-                ⚡
-              </div>
-              <div
-                className={cx("Chat-mode-btn", { active: mode === "stickers" })}
-                title="Stickers"
-                onClick={() => setMode("stickers")}
-              >
-                🎭
-              </div>
-            </div>
-            {mode === "text" ? (
-              <div className={"Chat-input-row"}>
-                <input
-                  className={"Chat-input"}
-                  type="text"
-                  dir="auto"
-                  maxLength={CHAT_MAX_TEXT_LENGTH}
-                  placeholder="Type a message…"
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && draft.trim().length > 0) {
-                      send("text", draft);
-                    }
-                  }}
-                />
+            <div className={"Sticker-grid"}>
+              {GAME_STICKERS.map((sticker) => (
                 <div
-                  className={cx("Chat-send-btn", {
-                    disabled: draft.trim().length === 0,
-                  })}
-                  onClick={() => {
-                    if (draft.trim().length > 0) {
-                      send("text", draft);
-                    }
-                  }}
+                  key={sticker.id}
+                  className={"Sticker-tile"}
+                  title={sticker.label}
+                  onClick={() => send(sticker)}
                 >
-                  ➤
+                  <img src={sticker.src} alt={sticker.label} draggable={false} />
                 </div>
-              </div>
-            ) : null}
-            {mode === "phrases" ? (
-              <div className={"Chat-ready-area"}>
-                <div className={"Chat-ready-label"}>Quick chat</div>
-                <div className={"Chat-phrases-grid"}>
-                  {QUICK_PHRASES_EN.map((phrase) => (
-                    <div
-                      key={`en-${phrase}`}
-                      className={"Chat-phrase-chip"}
-                      onClick={() => send("quick", phrase)}
-                    >
-                      {phrase}
-                    </div>
-                  ))}
-                </div>
-                <div className={"Chat-ready-label"} dir="rtl">
-                  چت سریع
-                </div>
-                <div className={"Chat-phrases-grid"} dir="rtl">
-                  {QUICK_PHRASES_FA.map((phrase) => (
-                    <div
-                      key={`fa-${phrase}`}
-                      className={"Chat-phrase-chip"}
-                      dir="auto"
-                      onClick={() => send("quick", phrase)}
-                    >
-                      {phrase}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {mode === "stickers" ? (
-              <div className={"Chat-ready-area"}>
-                <div className={"Chat-ready-label"}>Stickers</div>
-                <div className={"Chat-stickers-grid"}>
-                  {CHAT_STICKERS.map((sticker) => (
-                    <div
-                      key={sticker}
-                      className={"Chat-sticker-chip"}
-                      onClick={() => send("sticker", sticker)}
-                    >
-                      {sticker}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+              ))}
+            </div>
             {chat.sendError ? (
-              <div className={"Chat-error"}>A message failed to send — tap it to retry.</div>
+              <div className={"Sticker-error"}>
+                Sticker failed to send — check the connection and try again.
+              </div>
             ) : null}
           </div>
         </>
       ) : null}
 
-      {chat.bubble != null ? (
-        <div className={"Chat-bubble"} key={chat.bubble.seq}>
+      {chat.pop != null && popSticker != null ? (
+        <div className={"Sticker-pop"} key={chat.pop.seq}>
           <div
-            className={cx("Chat-bubble-inner", chat.bubble.kind)}
-            dir="auto"
+            className={cx("Sticker-pop-inner", {
+              mine: chat.pop.mine,
+            })}
           >
-            {chat.bubble.kind === "sticker" ? (
-              <span className={"Chat-bubble-sticker"}>{chat.bubble.text}</span>
-            ) : (
-              <span className={"Chat-bubble-text"}>{chat.bubble.text}</span>
-            )}
+            <img src={popSticker.src} alt={popSticker.label} draggable={false} />
           </div>
         </div>
       ) : null}
